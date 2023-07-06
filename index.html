@@ -15,19 +15,6 @@
             background-size: 100% 100%;
         }
 
-
-        /* div.ex1 {
-            width: 500px;
-            margin: auto;
-            border: 3px solid #73AD21;
-        }
-
-        div.ex2 {
-            max-width: 500px;
-            margin: auto;
-            border: 3px solid #73AD21;
-        } */
-
         .form-label {
             font-size: 1.2rem;
         }
@@ -50,34 +37,48 @@
             <img src="{{ url_for('static', filename='images/FindAThreadLogo.jpg') }}" alt="FindAThread Logo" width="192" height="192">
             <h1 class="display-6 fw-bold text-primary">FindAThread Login</h1>
         </div>
-        <div class="col-md-6 mx-auto text-center">
-            <div class="mb-3 row">
-                <label for="name" class="form-label col-12 col-md-3 fw-bold fs-5 text-md-end">Username</label>
-                <div class="col-12 col-md-9">
-                    <input type="text" class="form-control form-control-lg" id="name" name="name">
-                </div>
-            </div>
-            <div class="mb-3 row">
-                <label for="password" class="form-label col-12 col-md-3 fw-bold fs-5 text-md-end">Password</label>
-                <div class="col-12 col-md-6">
-                    <input type="password" class="form-control form-control-lg" id="password" name="password">
-                </div>
-                <div class="col-12 col-md-3">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="showPassword" onchange="togglePasswordVisibility()">
-                        <label class="form-check-label" for="showPassword">
-                            Show Password
-                        </label>
+        <form method="post" action="{{ url_for('loginauth') }}"> <!-- Modified the 'action' attribute -->
+            <div class="col-md-6 mx-auto text-center">
+                <div class="mb-3 row">
+                    <label for="username" class="form-label col-12 col-md-3 fw-bold fs-5 text-md-end">Username</label>
+                    <div class="col-12 col-md-9">
+                        <input type="text" class="form-control form-control-lg" id="username" name="username">
                     </div>
                 </div>
+                <div class="mb-3 row">
+                    <label for="password" class="form-label col-12 col-md-3 fw-bold fs-5 text-md-end">Password</label>
+                    <div class="col-12 col-md-6">
+                        <input type="password" class="form-control form-control-lg" id="password" name="password">
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="showPassword" onchange="togglePasswordVisibility()">
+                            <label class="form-check-label" for="showPassword">
+                                Show Password
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-grid gap-2 d-sm-flex justify-content-sm-center my-2">
+                    <button type="submit" class="btn btn-primary btn-lg px-4 gap-3">Login</button>
+                </div>
+                <div class="d-grid gap-2 d-sm-flex justify-content-sm-center my-2">
+                    <form method="post" action="{{ url_for('signuppage') }}">
+                        <button type="submit" class="btn btn-primary btn-lg px-4 gap-3">Sign Up</button>
+                </form>
             </div>
+            {% if error %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+            {% endif %}
             <div class="d-grid gap-2 d-sm-flex justify-content-sm-center my-2">
-                <button type="submit" class="btn btn-primary btn-lg px-4 gap-3">Login</button>
-                <form method="post" action="{{url_for('signup')}}">
-                  <button type="submit" class="btn btn-primary btn-lg px-4 gap-3">Sign Up</button>
-              </form> 
-            </div>
-          </div>
+                <form method="post" action="{{ url_for('skip') }}">
+                    <button type="submit" class="btn btn-primary btn-lg px-4 gap-3">Skip</button>
+            </form>
+        </div>
+        </div>
+    </form>
     </main>
 </body>
 </html>

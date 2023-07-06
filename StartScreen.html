@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Two Halves View</title>
+  <style>
+    .container {
+      display: flex;
+      width: 100%;
+      height: 100vh;
+    }
+
+    .left-half {
+      flex: 1;
+      background-color: yellow;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .right-half {
+      flex: 1;
+      background-color: purple;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: white;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="left-half">
+      <button class="button">Left</button>
+    </div>
+    <div class="right-half">
+      <button class="button">Right</button>
+    </div>
+  </div>
+</body>
+</html>

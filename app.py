@@ -1,42 +1,106 @@
-import os
-
 from flask import (Flask, redirect, render_template, request,
                    send_from_directory, url_for)
+import os
+import pyodbc
+
+
 
 app = Flask(__name__)
 
 
 @app.route('/')
 def index():
-   print('Request for index page received')
-   return render_template('index.html')
+    print('Request for index page received')
+    return render_template('index.html')
+
 
 @app.route('/FindAThread.ico')
 def findAThreadLogo():
     return send_from_directory(os.path.join(app.root_path, 'static'),
                                'FindAThread.ico', mimetype='image/FindAThreadLogo.jpg')
 
+
 @app.route('/hello', methods=['POST'])
 def hello():
-   name = request.form.get('name')
+    name = request.form.get('name')
 
-   if name:
-       print('Request for hello page received with name=%s' % name)
-       return render_template('hello.html', name = name)
-   else:
-       print('Request for hello page received with no name or blank name -- redirecting')
-       return redirect(url_for('index'))
-   
+    if name:
+        print('Request for hello page received with name=%s' % name)
+        return render_template('hello.html', name=name)
+    else:
+        print('Request for hello page received with no name or blank name -- redirecting')
+        return redirect(url_for('index'))
+
+@app.route('/signuppage', methods=['POST'])
+def signuppage():
+    return render_template('signup.html')
+
 @app.route('/signup', methods=['POST'])
 def signup():
+   # Retrieve the form data
+    first_name = request.form['firstName']
+    last_name = request.form['lastName']
+    email = request.form['email']
+    phone = request.form['phone']
+    username = request.form['username']
+    password = request.form['password']
 
-       return render_template('signup.html')
+    # Establish a connection to the database
+    connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+    cnxn = pyodbc.connect(connection_string)
 
-# @app.route('/acctcomplete', methods=['POST'])
-# def signup():
+    # Create a cursor object to execute SQL queries
+    cursor = cnxn.cursor()
 
-#        return render_template('signup.html')
+    # Get the maximum UserID and WardrobeID from the USER table
+    cursor.execute("SELECT MAX(UserID) FROM [dbo].[USER]")
+    max_user_id = cursor.fetchone()[0]
+    max_user_id = 1 if max_user_id is None else max_user_id + 1
+
+    cursor.execute("SELECT MAX(WardrobeID) FROM [dbo].[USER]")
+    max_wardrobe_id = cursor.fetchone()[0]
+    max_wardrobe_id = 1 if max_wardrobe_id is None else max_wardrobe_id + 1
+
+    # Insert the data into the USER table
+    insert_query = "INSERT INTO [dbo].[USER] (WardrobeID, Password, Email, PhoneNumber, ProfilePictrureURL, Username) VALUES (?, ?, ?, ?, ?, ?)"
+    cursor.execute(insert_query, (None, password, email, phone, None, username))
+    cnxn.commit()
+
+    # Close the cursor and connection
+    cursor.close()
+    cnxn.close()
+    return render_template('index.html')
+
+@app.route('/loginauth', methods=['POST'])
+def loginauth():
+    username = request.form.get('username')
+    password = request.form.get('password')
+    print(f"Username: {username}, Password: {password}")
 
 
+    # Establish a connection to the database
+    connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+    cnxn = pyodbc.connect(connection_string)
+    cursor = cnxn.cursor()
+
+    # Execute the validation query
+    query = "SELECT COUNT(*) AS count FROM [dbo].[USER] WHERE [Username] = ? AND [Password] = ?"
+    cursor.execute(query, (username, password))
+    result = cursor.fetchone()
+
+    count = result.count
+
+    # Check if user exists
+    if count > 0:
+        print("User authenticated")
+        return render_template('StartScreen.html')
+    else:
+        error_message = 'Invalid username or password'
+        print(error_message)
+        return render_template('index.html', error=error_message)
+    
+@app.route('/skip', methods=['POST'])
+def skip():
+    return render_template('StartScreen.html')
 if __name__ == '__main__':
-   app.run()
+    app.run()
