@@ -2,76 +2,29 @@
 <html>
 <head>
   <title>Two Halves View</title>
-  <style>
-    .container {
-      display: flex;
-      width: 100%;
-      height: 100vh;
-    }
-
-    .left-half {
-      flex: 1;
-      background-color: yellow;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-    .header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      background-color: #333;
-      color: #fff;
-      padding: 10px;
-    }
-    .form-gorup {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .file-label {
-      margin-top: 10px;
-    }
-
-    .upload-btn {
-      margin-top: 10px;
-    }
-
-    .right-half {
-      flex: 1;
-      background-color: purple;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .button {
-      padding: 10px 20px;
-      font-size: 16px;
-      background-color: white;
-      border: none;
-      cursor: pointer;
-    }
-  </style>
+  <link rel="stylesheet" href="static/bootstrap/css/upload-image.css">
+  <script src="static/bootstrap/js/upload-image.js"></script>
 </head>
 <body>
   <div class="container">
     <div class="left-half">
-        <h1 class="header">Upload Image</h1>
-        <form action="/upload" method="post" enctype="multipart/form-data">
-          <div class="form-group">
-            <input type="file" name="image" accept="image/*">
-            <label for="image-upload" class="file-label">Select File </label>
-          </div>  
-            <input type="submit" value="Upload" class="upload-btn">
-          </form>
-          
+      <div class="header">Upload Image </div>
+      <form action="">
+        <div class="form">
+          <div>
+            <button class="btn bg-color-dblue btn-primary px-4 py-3">Browse</button>
+            <img src="static/images/upload.png" alt="upload" width="20%" class="mx-2">
+            Upload your files here
+          </div>
+          <input name="file" id="entry_value" ref="fileInput" type="file" onchange="getFileName()">
+        </div>
+        <span id="fileName" class="text-primary "></span>
+      </form>
     </div>
     <div class="right-half">
-      <button class="button">Right</button>
+      <form method="post" action="{{ url_for('createWardrobe') }}">
+        <button class="button">Create Wardrobe</button>
+      </form>
     </div>
   </div>
 </body>

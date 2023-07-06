@@ -4,32 +4,20 @@ import os
 import pyodbc
 
 
-
 app = Flask(__name__)
 
+current_user = -1
 
 @app.route('/')
 def index():
+    current_user = -1
     print('Request for index page received')
     return render_template('index.html')
-
 
 @app.route('/FindAThread.ico')
 def findAThreadLogo():
     return send_from_directory(os.path.join(app.root_path, 'static'),
                                'FindAThread.ico', mimetype='image/FindAThreadLogo.jpg')
-
-
-@app.route('/hello', methods=['POST'])
-def hello():
-    name = request.form.get('name')
-
-    if name:
-        print('Request for hello page received with name=%s' % name)
-        return render_template('hello.html', name=name)
-    else:
-        print('Request for hello page received with no name or blank name -- redirecting')
-        return redirect(url_for('index'))
 
 @app.route('/signuppage', methods=['POST'])
 def signuppage():
@@ -93,11 +81,17 @@ def loginauth():
     # Check if user exists
     if count > 0:
         print("User authenticated")
+        query = "SELECT UserID AS count FROM [dbo].[USER] WHERE [Username] = ? AND [Password] = ?"
+        cursor.execute(query, (username, password))
+        result = cursor.fetchone()[0]
+        current_user = result
+        print (current_user)
         return render_template('StartScreen.html')
     else:
         error_message = 'Invalid username or password'
         print(error_message)
         return render_template('index.html', error=error_message)
+
     
 @app.route('/skip', methods=['POST'])
 def skip():
@@ -105,9 +99,12 @@ def skip():
 
 @app.route('/upload', methods=['POST'])
 def upload():
-    uploaded_file = request.files['image']
-    
+    uploaded_file = request.files['image']    
     return 'File uploaded sucessfully'
+
+@app.route('/createWardrobe', methods=['POST'])
+def createWardrobe():
+    return render_template('AddToWardrobe.html')
 
 if __name__ == '__main__':
     app.run()
