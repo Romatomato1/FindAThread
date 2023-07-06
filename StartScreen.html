@@ -13,8 +13,31 @@
       flex: 1;
       background-color: yellow;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+    }
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: #333;
+      color: #fff;
+      padding: 10px;
+    }
+    .form-gorup {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .file-label {
+      margin-top: 10px;
+    }
+
+    .upload-btn {
+      margin-top: 10px;
     }
 
     .right-half {
@@ -24,7 +47,7 @@
       align-items: center;
       justify-content: center;
     }
-
+    
     .button {
       padding: 10px 20px;
       font-size: 16px;
@@ -37,7 +60,15 @@
 <body>
   <div class="container">
     <div class="left-half">
-      <button class="button">Left</button>
+        <h1 class="header">Upload Image</h1>
+        <form action="/upload" method="post" enctype="multipart/form-data">
+          <div class="form-group">
+            <input type="file" name="image" accept="image/*">
+            <label for="image-upload" class="file-label">Select File </label>
+          </div>  
+            <input type="submit" value="Upload" class="upload-btn">
+          </form>
+          
     </div>
     <div class="right-half">
       <button class="button">Right</button>

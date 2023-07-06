@@ -102,5 +102,12 @@ def loginauth():
 @app.route('/skip', methods=['POST'])
 def skip():
     return render_template('StartScreen.html')
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    uploaded_file = request.files['image']
+    
+    return 'File uploaded sucessfully'
+
 if __name__ == '__main__':
     app.run()
