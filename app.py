@@ -2,15 +2,18 @@ from flask import (Flask, redirect, render_template, request,
                    send_from_directory, url_for)
 import os
 import pyodbc
+import json
 
 
 app = Flask(__name__)
 
 current_user = -1
+current_username = " "
 
 @app.route('/')
 def index():
     current_user = -1
+    current_username = " "
     print('Request for index page received')
     return render_template('index.html')
 
@@ -59,6 +62,25 @@ def signup():
     cnxn.close()
     return render_template('index.html')
 
+def get_existing_wardrobes():
+    # Establish a connection to the database
+    connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+    conn = pyodbc.connect(connection_string)
+
+    # Execute the query to retrieve existing wardrobe names
+    cursor = conn.cursor()
+    cursor.execute("SELECT WardrobeID, WardrobeName FROM WARDROBE")
+    rows = cursor.fetchall()
+
+    # Create a list of dictionaries with wardrobe IDs and names
+    existing_wardrobes = [{'id': row[0], 'name': row[1]} for row in rows]
+
+    # Close the cursor and connection
+    cursor.close()
+    conn.close()
+    print (existing_wardrobes)
+    return existing_wardrobes
+
 @app.route('/loginauth', methods=['POST'])
 def loginauth():
     username = request.form.get('username')
@@ -85,8 +107,12 @@ def loginauth():
         cursor.execute(query, (username, password))
         result = cursor.fetchone()[0]
         current_user = result
+        current_username = username
         print (current_user)
-        return render_template('StartScreen.html')
+        print (current_username)
+        # Existing wardrobe data from the database
+        existing_wardrobes = get_existing_wardrobes()  # Replace with your implementation
+        return render_template('AddToWardrobe.html', existing_wardrobes=existing_wardrobes)
     else:
         error_message = 'Invalid username or password'
         print(error_message)
@@ -97,14 +123,42 @@ def loginauth():
 def skip():
     return render_template('StartScreen.html')
 
+@app.route('/createOutfit', methods=['POST'])
+def createOutfit():
+    return render_template('CreateAnOutfit.html')
+
 @app.route('/upload', methods=['POST'])
 def upload():
-    uploaded_file = request.files['image']    
-    return 'File uploaded sucessfully'
+    file = request.files['file']
+    if file:
+        filename = file.filename
+        file.save('uploads/' + filename)
+        # Add your code to handle the uploaded file as needed
+        return render_template('AddToWardrobe.html')
+    else:
+        return 'No file selected'
 
-@app.route('/createWardrobe', methods=['POST'])
-def createWardrobe():
-    return render_template('AddToWardrobe.html')
+@app.route('/newWardrobe', methods=['POST'])
+def newWardrobe():
+    wardrobe_name = request.form.get('wardrobe-name')
+     # Establish a connection to the database
+    connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+    cnxn = pyodbc.connect(connection_string)
+
+    # # Create a cursor object to execute SQL queries
+    cursor = cnxn.cursor()
+
+    insert_query = "INSERT INTO [dbo].[Wardrobe] (ClothingID,wardrobeName,Stock) VALUES (?,?,?)"
+    cursor.execute(insert_query, (None,wardrobe_name,None))
+    cnxn.commit()
+
+    # # Close the cursor and connection
+    cursor.close()
+    cnxn.close()
+
+    return render_template('StartScreen.html')
+
+    
 
 if __name__ == '__main__':
     app.run()

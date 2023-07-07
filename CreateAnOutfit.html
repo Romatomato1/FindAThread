@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Outfit Planner</title>
+  <style>
+    /* Reset default browser styles */
+    body, h1, h2, h3, p, ul, li {
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Global styles */
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.5;
+      background-color: #f1f1f1;
+      color: #333;
+      padding: 20px;
+    }
+
+    header {
+      background-color: #333;
+      color: #fff;
+      padding: 20px;
+    }
+
+    header h1 {
+      font-size: 24px;
+    }
+
+    nav ul {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    nav ul li {
+      display: inline;
+    }
+
+    nav ul li a {
+      color: #fff;
+      text-decoration: none;
+      margin-right: 10px;
+    }
+
+    main {
+      margin-top: 20px;
+    }
+
+    section {
+      margin-bottom: 20px;
+    }
+
+    section h3 {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
+    footer {
+      background-color: #333;
+      color: #fff;
+      padding: 10px;
+      text-align: center;
+    }
+
+    /* Added styles for image container and vertical alignment */
+    .image-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh; /* Adjust the height as needed */
+    }
+
+    .image-container img {
+      width: 100%;
+      height: auto;
+      margin-bottom: 10px; /* Adjust the margin between images */
+    }
+
+    .image-container button {
+      align-self: flex-start;
+      margin-bottom: 10px; /* Adjust the margin between button and image */
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Outfit Planner</h1>
+  </header>
+
+  <main>
+    <h2>Welcome to Outfit Planner</h2>
+    <p>Plan your outfits for any occasion with ease!</p>
+
+    <section id="outfit-ideas">
+      <h3>Outfit Ideas</h3>
+      <p>Explore a wide range of outfit ideas for various occasions.</p>
+      <!-- Display outfit ideas here -->
+    </section>
+
+    <section id="favorites">
+      <h3>Favorites</h3>
+      <p>Save your favorite outfits for quick access.</p>
+      <!-- Display favorite outfits here -->
+    </section>
+
+    <div class="image-container">
+      <div>
+        <button>Head</button>
+        <img src="static/images/head.jpg" alt="Head">
+      </div>
+      <div>
+        <button>Top</button>
+        <img src="static/images/Top.jpg" alt="Top">
+      </div>
+      <div>
+        <button>Bottom</button>
+        <img src="static/images/Bottom.jpg" alt="Bottom">
+      </div>
+      <div>
+        <button>Shoes</button>
+        <img src="static/images/shoes.jpg" alt="Shoes">
+      </div>
+    </div>
+  </main>
+</body>
+</html>

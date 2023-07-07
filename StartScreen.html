@@ -3,27 +3,30 @@
 <head>
   <title>Two Halves View</title>
   <link rel="stylesheet" href="static/bootstrap/css/upload-image.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
   <script src="static/bootstrap/js/upload-image.js"></script>
+  <script>
+    var baseUrl = "{{ request.host_url }}";
+  </script>
 </head>
 <body>
   <div class="container">
     <div class="left-half">
-      <div class="header">Upload Image </div>
-      <form action="">
-        <div class="form">
-          <div>
-            <button class="btn bg-color-dblue btn-primary px-4 py-3">Browse</button>
-            <img src="static/images/upload.png" alt="upload" width="20%" class="mx-2">
-            Upload your files here
-          </div>
-          <input name="file" id="entry_value" ref="fileInput" type="file" onchange="getFileName()">
+      <div class="header">Upload Image</div>
+      <div class="form" id="uploadForm">
+        <input name="file" type="file" id="fileInput" onchange="getFileName()">
+        <div>     
+          <img src="static/images/upload.png" alt="upload" width="20%" class="mx-2">
+          Drag or Click
         </div>
-        <span id="fileName" class="text-primary "></span>
-      </form>
+        <span id="fileName" class="text-primary"></span>
+      </div>
+      <button class="imageUpload" onclick="uploadImage()">Upload</button>
     </div>
     <div class="right-half">
-      <form method="post" action="{{ url_for('createWardrobe') }}">
-        <button class="button">Create Wardrobe</button>
+      <form method="post" action="{{ url_for('createOutfit') }}">
+        <button class="button">Create Outfit</button>
       </form>
     </div>
   </div>
