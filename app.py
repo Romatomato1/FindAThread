@@ -1,11 +1,9 @@
 from flask import (Flask, redirect, render_template, request,
                    send_from_directory, url_for)
-
-from azure.storage.blob import BlobServiceClient
 import os
 import pyodbc
 import json
-
+from azure.storage.blob import BlobServiceClient
 
 app = Flask(__name__)
 
@@ -22,7 +20,7 @@ def index():
 @app.route('/FindAThread.ico')
 def findAThreadLogo():
     return send_from_directory(os.path.join(app.root_path, 'static'),
-                               'FindAThread.ico', mimetype='image/FindAThreadLogo.jpg')
+                               'FindAThreadLogo.ico', mimetype='image/vnd.microsoft.icon')
 
 @app.route('/signuppage', methods=['POST'])
 def signuppage():
@@ -131,24 +129,24 @@ def createOutfit():
 
 @app.route('/upload', methods=['POST'])
 def upload():
-    
+
     storage_account_key = "lMD3BaFpJCcz5cN7vMa+/XANoUaUOWVINZCeqOvDIu/fWnXTVGU2ysMuZhwWovJwJ+WDbqaL1fbN+AStr2YFfg=="
     storage_account_name = "findathreadcontainer"
-    
-    
+
+
     file = request.files['file']
     if file:
         connection_string = "DefaultEndpointsProtocol=https;AccountName=findathreadcontainer;AccountKey=lM/MQ4LQ8XVjlZoz8l122v2bNgIwo3k/Yc6v/WXmwdhZpD6aXDbAqX9h3L8v2IPFTFoC07y120fJ+AStqArU7A==;EndpointSuffix=core.windows.net"
         blob_service_client = BlobServiceClient.from_connection_string(connection_string)
-        
+
         container_name = "imagestorage"
         container_client = blob_service_client.get_container_client(container_name)
-        
+
         filename = file.filename
-        
+
         blob_client = container_client.get_blob_client(filename)
         blob_client.upload_blob(file)
-        
+
         return render_template('AddToWardrobe.html')
     else:
         return 'No file selected'

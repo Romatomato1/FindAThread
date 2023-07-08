@@ -4,6 +4,7 @@
   <title>Two Halves View</title>
   <link rel="stylesheet" href="static/bootstrap/css/upload-image.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <link rel="shortcut icon" href="{{ url_for('static', filename='FindAThreadLogo.ico') }}">
   <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
   <script src="static/bootstrap/js/upload-image.js"></script>
   <script>
@@ -16,7 +17,7 @@
       <div class="header">Upload Image</div>
       <div class="form" id="uploadForm">
         <input name="file" type="file" id="fileInput" onchange="getFileName()">
-        <div>     
+        <div>
           <img src="static/images/upload.png" alt="upload" width="20%" class="mx-2">
           Drag or Click
         </div>
