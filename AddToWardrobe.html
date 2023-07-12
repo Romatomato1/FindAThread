@@ -4,12 +4,22 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='FindAThreadLogo.ico') }}">
     <style>
         /* CSS */
+        html,
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f2f2f2;
+            height: 100%;
+            margin: 0;
+            overflow: hidden; /* Add this line to hide content overflow */
+        }
+
+        body {
+            background-image: linear-gradient(180deg,rgb(131, 0, 192),rgb(228, 194, 0));
+            background-repeat: no-repeat;
+            background-size: cover; /* Use "cover" to maintain aspect ratio */
+            margin: 0;
         }
 
         .container {
+            background-image: rgb(27, 50, 255);
             max-width: 400px;
             margin: 0 auto;
             padding: 20px;
@@ -104,15 +114,26 @@
             text-align: center;
             margin-bottom: 20px;
         }
+
+        .text-box-sm {
+            width: 400px; /* Adjust the width as per your preference */
+            height: 30px; /* Adjust the height as per your preference */
+            font-size: 14px; /* Adjust the font size as per your preference */
+        }
+
     </style>
 </head>
 <body>
   <div class="container">
-      <h2 class="wardrobe-heading">Create New Wardrobe</h2>
-      <form method="post" action="{{ url_for('newWardrobe') }}">
-          <input class="text-box" type="text" name="wardrobe-name" placeholder="Enter wardrobe name" required>
-          <button class="button-89" type="submit">Create Wardrobe</button>
-      </form>
+    <h2 class="wardrobe-heading">Create New Wardrobe</h2>
+    <form method="post" action="{{ url_for('newWardrobe') }}" class="form-inline">
+        <div class="form-group">
+            <input class="form-control text-box-sm" type="text" name="wardrobe-name" placeholder="Enter wardrobe name" required>
+        </div>
+        <button class="btn btn-primary button-89" type="submit">Create Wardrobe</button>
+    </form>
+
+    
 
       <div class="divider">
           <hr>
@@ -121,16 +142,36 @@
       </div>
 
       <h2 class="wardrobe-heading">Select Existing Wardrobe</h2>
-      <div class="dropdown-container">
-        <select class="dropdown" name="existing-wardrobe">
-            <option value="">Select an existing wardrobe</option>
+    <div class="dropdown-container">
+        <form method="post" action="{{ url_for('selectWardrobe') }}">
+            <select class="dropdown" name="existing-wardrobe">
+                <option value="">Select an existing wardrobe</option>
                 {% for wardrobe in existing_wardrobes %}
                     <option value="{{ wardrobe.id }}">{{ wardrobe.name }}</option>
                 {% endfor %}
-        </select>
-      </div>
-      <button class="select-button" type="submit">Select</button>
-  </div>
+            </select>
+            <button class="button-89" type="submit">Select</button>
+        </form>
+    </div>
+
+      <div class="divider">
+        <hr>
+        <span>OR</span>
+        <hr>
+    </div>
+
+    <h2 class="wardrobe-heading">Delete Wardrobe</h2>
+    <div class="dropdown-container">
+        <form method="post" action="{{ url_for('deleteWardrobe') }}">
+            <select class="dropdown" name="delete-wardrobe">
+                <option value="">Select an existing wardrobe</option>
+                {% for wardrobe in existing_wardrobes %}
+                    <option value="{{ wardrobe.id }}">{{ wardrobe.name }}</option>
+                {% endfor %}
+            </select>
+            <button class="button-89" type="submit">Select</button>
+        </form>
+    </div>
 
   <script>
     {% raw %}

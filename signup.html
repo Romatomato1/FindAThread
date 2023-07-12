@@ -5,23 +5,18 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='FindAThreadLogo.ico') }}">
     <style>
+        html,
         body {
-            background-color: #483bff;
+            height: 100%;
+            margin: 0;
+            overflow: hidden; /* Add this line to hide content overflow */
         }
 
-        .container {
-            background-color: #ffee00;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .form-label {
-            font-size: 1.2rem;
-        }
-
-        .form-control {
-            font-size: 1.2rem;
+        body {
+            background-image: linear-gradient(180deg,rgb(131, 0, 192),rgb(228, 194, 0));
+            background-repeat: no-repeat;
+            background-size: cover; /* Use "cover" to maintain aspect ratio */
+            margin: 0;
         }
     </style>
     <script>

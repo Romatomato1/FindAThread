@@ -5,50 +5,47 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='FindAThreadLogo.ico') }}">
     <style>
-        html, body {
+        html,
+        body {
             height: 100%;
+            margin: 0;
+            overflow: hidden; /* Add this line to hide content overflow */
         }
 
         body {
-            background-image: linear-gradient(180deg, rgb(255, 242, 0), rgb(127, 0, 127));
+            background-image: linear-gradient(180deg,rgb(131, 0, 192),rgb(228, 194, 0));
             background-repeat: no-repeat;
-            background-size: 100% 100%;
+            background-size: cover; /* Use "cover" to maintain aspect ratio */
+            margin: 0;
         }
 
-        .form-label {
-            font-size: 1.2rem;
-        }
-
-        .form-control {
-            font-size: 1.2rem;
-        }
 
         .button-75 {
-        align-items: center;
-        background-image: linear-gradient(180deg, rgb(42, 39, 255), rgb(11, 181, 211));
-        border: 0;
-        border-radius: 10px;
-        box-sizing: border-box;
-        color: #fff;
-        cursor: pointer;
-        display: flex;
-        flex-direction: column;
-        font-family: "Codec cold",sans-serif;
-        font-size: 16px;
-        font-weight: 700;
-        height: 54px;
-        justify-content: center;
-        letter-spacing: .4px;
-        line-height: 1;
-        max-width: 100%;
-        padding-left: 20px;
-        padding-right: 20px;
-        padding-top: 3px;
-        text-decoration: none;
-        text-transform: uppercase;
-        user-select: none;
-        -webkit-user-select: none;
-        touch-action: manipulation;
+            align-items: center;
+            background-image: linear-gradient(180deg, rgb(42, 39, 255), rgb(11, 181, 211));
+            border: 0;
+            border-radius: 10px;
+            box-sizing: border-box;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            font-family: "Codec cold",sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            height: 54px;
+            justify-content: center;
+            letter-spacing: .4px;
+            line-height: 1;
+            max-width: 100%;
+            padding-left: 20px;
+            padding-right: 20px;
+            padding-top: 3px;
+            text-decoration: none;
+            text-transform: uppercase;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
         }
 
         .button-75:active {
@@ -92,7 +89,7 @@
 <body>
     <main>
         <div class="container px-4 py-3 my-2 text-center">
-            <img src="{{ url_for('static', filename='images/FindAThreadLogo.jpg') }}" alt="FindAThread Logo" width="192" height="192">
+            <img src="{{ "https://findathreadcontainer.blob.core.windows.net/imagestorage/FindAThreadLogo.png" }}" alt="FindAThread Logo" width="192" height="192">
             <h1 class="display-6 fw-bold text-primary">FindAThread Login</h1>
         </div>
         <form method="post" action="{{ url_for('loginauth') }}"> <!-- Modified the 'action' attribute -->
