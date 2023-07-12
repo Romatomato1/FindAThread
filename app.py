@@ -178,7 +178,7 @@ def get_color_name(rgb):
     rgb = tuple(int(value) for value in rgb)
 
     # Make a request to the Color API
-    print("https://www.thecolorapi.com/id?rgb=" + str(rgb[0]) + "," + str(rgb[1]) + "," + str(rgb[2]) + "&format=json")
+    # print("https://www.thecolorapi.com/id?rgb=" + str(rgb[0]) + "," + str(rgb[1]) + "," + str(rgb[2]) + "&format=json")
     response = requests.get(f"https://www.thecolorapi.com/id?rgb=" + str(rgb[0]) + "," + str(rgb[1]) + "," + str(rgb[2]) + "&format=json")
 
     if response.status_code == 200:
@@ -256,6 +256,12 @@ def upload():
 
         # Check if the image already exists
         if blob_client.exists():
+            # Upload the image
+            
+            image_url = blob_client.url
+
+            # Perform image processing on the uploaded image
+            imageProcess(image_url)
             return jsonify({'status': 'duplicate'})  # Return duplicate image response
         else:
             # Upload the image
