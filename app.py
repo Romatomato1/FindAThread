@@ -129,6 +129,7 @@ def skip():
 def createOutfit():
     return render_template('CreateAnOutfit.html')
 
+
 def get_nearest_basic_color(hex_code):
     basic_colors = {
         "Red": (255, 0, 0),
@@ -178,7 +179,7 @@ def get_color_name(rgb):
     rgb = tuple(int(value) for value in rgb)
 
     # Make a request to the Color API
-    # print("https://www.thecolorapi.com/id?rgb=" + str(rgb[0]) + "," + str(rgb[1]) + "," + str(rgb[2]) + "&format=json")
+    print("https://www.thecolorapi.com/id?rgb=" + str(rgb[0]) + "," + str(rgb[1]) + "," + str(rgb[2]) + "&format=json")
     response = requests.get(f"https://www.thecolorapi.com/id?rgb=" + str(rgb[0]) + "," + str(rgb[1]) + "," + str(rgb[2]) + "&format=json")
 
     if response.status_code == 200:
@@ -243,6 +244,8 @@ def upload():
     storage_account_name = "findathreadcontainer"
 
     file = request.files['file']
+    gender = request.form['gender']
+    print("GENDER SELCETED: " + gender)
     if file:
         connection_string = "DefaultEndpointsProtocol=https;AccountName=findathreadcontainer;AccountKey=lM/MQ4LQ8XVjlZoz8l122v2bNgIwo3k/Yc6v/WXmwdhZpD6aXDbAqX9h3L8v2IPFTFoC07y120fJ+AStqArU7A==;EndpointSuffix=core.windows.net"
         blob_service_client = BlobServiceClient.from_connection_string(connection_string)
@@ -368,7 +371,27 @@ def deleteWardrobe():
     # Handle the case where the wardrobe_id is None
     return 'Failed to delete wardrobe'
 
+@app.route('/tops',methods=['GET', 'POST'])
+def tops():
+     # Establish a connection to the database
+    connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+    cnxn = pyodbc.connect(connection_string)
 
+    # Create a cursor object to execute SQL queries
+    cursor = cnxn.cursor()
+
+    cursor.execute('SELECT ImageURL FROM Clothing')
+    rows = cursor.fetchall()
+
+    # Extract the image URLs from the query results
+    imageURLs = [row.ImageURL for row in rows if row.ImageURL]
+
+    # Close the cursor and connection
+    cursor.close()
+    cnxn.close()
+
+    # Render the HTML template and pass the image URLs to it
+    return render_template('Tops.html', imageURLs=imageURLs)
     
 
 if __name__ == '__main__':

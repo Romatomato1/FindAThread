@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Image Gallery</title>
+  <style>
+    .image {
+      display: inline-block;
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Image Gallery</h1>
+
+  <div id="image-container">
+    {% for imageURL in imageURLs %}
+    <img src="{{ imageURL }}" class="image">
+    {% endfor %}
+  </div>
+</body>
+</html>

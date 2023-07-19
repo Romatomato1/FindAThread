@@ -17,6 +17,7 @@ html, body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    position: relative;
 }
 .header {
     position: fixed;
@@ -48,10 +49,35 @@ html, body {
     color: black;
     font-family: Arial;
     position: absolute;
-    top: 10%;
+    top: 0%;
     z-index: 1;
 }
-    
+
+.gender-form {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 25%;
+  transform: translate(-50%, -50%);
+  border: 1px solid #ccc;
+  padding: 10px;
+  background-image: linear-gradient(180deg, rgb(131, 0, 192), rgb(228, 194, 0));
+  z-index: 999; /* Ensure the pop-up is above other elements */
+  width: 20%; /* Update the width to your desired value, e.g., 70% */
+  height: 150px
+}
+
+/* Add custom styles for radio buttons to improve formatting */
+.gender-radio {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.gender-radio input[type="radio"] {
+  margin-right: 5px;
+}
+
 .form input{
     position: relative;
     margin: 0;
@@ -73,21 +99,7 @@ html, body {
         font-size: 16px;
 }
 
-.imageUpload{
-    border-radius: 10px;
-    padding: 10px 20px;
-    background: #1950A3;
-    outline: none;
-    border: none;
-    color: white;
-    font-size: 16px;
-}
 
-div img {
-        position: relative;
-        top: 30px;
-        left: -10px;
-}
 
 #fileName::before {
         content: 'File Name:';
@@ -97,7 +109,7 @@ div img {
         position: relative;
         top: 10px;
 }
-    
+  
 .right-half {
     flex: 1;
     background-image: linear-gradient(180deg, rgb(228, 194, 0),rgb(131, 0, 192));
@@ -117,7 +129,19 @@ div img {
     color: #fff;
     border: none;
   }
-  
+
+  .submit-button {
+    position: relative;
+    overflow: hidden;
+    height: 2rem;
+    padding: 0 2rem;
+    border-radius: 1.5rem;
+    background: #3d3a4e;
+    background-size: 400%;
+    color: #fff;
+    border: none;
+  }
+
   .button:hover::before {
     transform: scaleX(1);
   }

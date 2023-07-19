@@ -16,14 +16,14 @@
     <div class="left-half">
       <div class="header">Upload Image</div>
       <div class="form" id="uploadForm">
-        <input name="file" type="file" id="fileInput" onchange="getFileName()">
+        <input name="file" type="file" id="fileInput" onchange="getFileName()" onclick="hideGenderForm()">
         <div>
           <img src="https://findathreadcontainer.blob.core.windows.net/imagestorage/upload.png" alt="upload" width="20%" class="mx-2">
           Drag or Click
         </div>
         <span id="fileName" class="text-primary"></span>
+        <button class="button" onclick="showGenderForm()">Next</button>
       </div>
-      <button class="button" onclick="uploadImage()">Upload</button>
     </div>
     <div class="right-half">
       <form method="post" action="{{ url_for('createOutfit') }}">
@@ -31,5 +31,23 @@
       </form>
     </div>
   </div>
+  
+    <!-- Gender Pop-up Block -->
+    <div class="gender-form" id="genderForm">
+      <p>What is your gender?</p>
+      <div class="gender-radio">
+        <input type="radio" id="maleGender" name="gender" value="Male">
+        <label for="maleGender">Male</label>
+      </div>
+      <div class="gender-radio">
+        <input type="radio" id="femaleGender" name="gender" value="Female">
+        <label for="femaleGender">Female</label>
+      </div>
+      <div class="gender-radio">
+        <input type="radio" id="unknownGender" name="gender" value="Unisex">
+        <label for="unknownGender">Unisex</label>
+      </div>
+      <button class="button submit-button" onclick="uploadImage()">Submit</button>
+    </div>
 </body>
 </html>
