@@ -4,85 +4,48 @@
   <title>Outfit Planner</title>
   <link rel="shortcut icon" href="{{ url_for('static', filename='FindAThreadLogo.ico') }}">
   <style>
-    /* Reset default browser styles */
-    body, h1, h2, h3, p, ul, li {
-      margin: 0;
-      padding: 0;
-    }
-
-    /* Global styles */
-    body {
-      font-family: Arial, sans-serif;
-      line-height: 1.5;
-      background-color: #f1f1f1;
-      color: #333;
-      padding: 20px;
-    }
-
-    header {
-      background-color: #333;
-      color: #fff;
-      padding: 20px;
-    }
-
-    header h1 {
-      font-size: 24px;
-    }
-
-    nav ul {
-      list-style-type: none;
-      margin: 0;
-      padding: 0;
-    }
-
-    nav ul li {
-      display: inline;
-    }
-
-    nav ul li a {
-      color: #fff;
-      text-decoration: none;
-      margin-right: 10px;
-    }
-
-    main {
-      margin-top: 20px;
-    }
-
-    section {
-      margin-bottom: 20px;
-    }
-
-    section h3 {
-      font-size: 20px;
-      margin-bottom: 10px;
-    }
-
-    footer {
-      background-color: #333;
-      color: #fff;
-      padding: 10px;
-      text-align: center;
-    }
-
-    /* Added styles for image container and vertical alignment */
     .image-container {
       display: flex;
-      flex-direction: column;
       justify-content: center;
       align-items: center;
-      height: 100vh; /* Adjust the height as needed */
+      height: 25vh; /* Adjust the height as needed */
+      flex-wrap: wrap; /* To ensure images wrap when the screen is too narrow */
+    }
+
+    .image-container a {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 5px; /* Adjust the margin between image and button */
+      text-decoration: none; /* Remove the default underline style for the anchor element */
     }
 
     .image-container img {
-      width: 100%;
-      height: auto;
-      margin-bottom: 10px; /* Adjust the margin between images */
+      cursor: pointer; /* Change cursor to pointer to indicate it's clickable */
     }
 
-    .image-container button {
-      align-self: flex-start;
-      margin-bottom: 10px; /* Adjust the margin between button and image */
+    /* Dimensions for Head image */
+    .image-container .head-image img {
+      width: 150px; /* Set the desired width for the head image */
+      height: 100px; /* Set the desired height for the head image */
+    }
+
+    /* Dimensions for Top image */
+    .image-container .top-image img {
+      width: 180px; /* Set the desired width for the top image */
+      height: 250px; /* Set the desired height for the top image */
+    }
+
+    /* Dimensions for Bottom image */
+    .image-container .bottom-image img {
+      width: 160px; /* Set the desired width for the bottom image */
+      height: 200px; /* Set the desired height for the bottom image */
+    }
+
+    /* Dimensions for Shoes image */
+    .image-container .shoes-image img {
+      width: 160px; /* Set the desired width for the shoes image */
+      height: 90px; /* Set the desired height for the shoes image */
     }
   </style>
 </head>
@@ -91,42 +54,32 @@
     <h1>Outfit Planner</h1>
   </header>
 
-  <main>
-    <h2>Welcome to Outfit Planner</h2>
-    <p>Plan your outfits for any occasion with ease!</p>
+  <!-- Image container for Head -->
+  <div class="image-container">
+    <a href="{{ url_for('head') }}" class="head-image">
+      <img src="{{ outfit.user_head }}" alt="Head">
+    </a>
+  </div>
 
-    <section id="outfit-ideas">
-      <h3>Outfit Ideas</h3>
-      <p>Explore a wide range of outfit ideas for various occasions.</p>
-      <!-- Display outfit ideas here -->
-    </section>
+  <!-- Image container for Top -->
+  <div class="image-container">
+    <a href="{{ url_for('tops') }}" class="top-image">
+      <img src="{{ outfit.user_top }}" alt="Top">
+    </a>
+  </div>
 
-    <section id="favorites">
-      <h3>Favorites</h3>
-      <p>Save your favorite outfits for quick access.</p>
-      <!-- Display favorite outfits here -->
-    </section>
+  <!-- Image container for Bottom -->
+  <div class="image-container">
+    <a href="{{ url_for('bottoms') }}" class="bottom-image">
+      <img src="{{ outfit.user_bottom }}" alt="Bottom">
+    </a>
+  </div>
 
-    <div class="image-container">
-      <div>
-        <button>Head</button>
-        <img src="https://findathreadcontainer.blob.core.windows.net/imagestorage/head.jpg" alt="Head">
-      </div>
-      <div>
-        <form method="post" action="{{ url_for('tops') }}" class="form-inline">
-          <button>Top</button>
-        </form>
-        <img src="https://findathreadcontainer.blob.core.windows.net/imagestorage/Top.jpg" alt="Top">
-      </div>
-      <div>
-        <button>Bottom</button>
-        <img src="https://findathreadcontainer.blob.core.windows.net/imagestorage/Bottom.jpg" alt="Bottom">
-      </div>
-      <div>
-        <button>Shoes</button>
-        <img src="https://findathreadcontainer.blob.core.windows.net/imagestorage/shoes.jpg" alt="Shoes">
-      </div>
-    </div>
-  </main>
+  <!-- Image container for Shoes -->
+  <div class="image-container">
+    <a href="{{ url_for('shoes') }}" class="shoes-image">
+      <img src="{{ outfit.user_shoes }}" alt="Shoes">
+    </a>
+  </div>
 </body>
 </html>

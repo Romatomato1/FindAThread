@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Tops</title>
+  <title>Headware</title>
   <style>
     html, body {
       height: 100%;
@@ -24,13 +24,13 @@
   </style>
 </head>
 <body>
-  <h1>Tops</h1>
+  <h1>Headware</h1>
 
-  <form method="POST" action="/set_top" onsubmit="return validateForm()">
+  <form method="POST" action="/set_head" onsubmit="return validateForm()">
     <div id="image-container">
       {% for imageURL in imageURLs %}
       <label>
-        <input type="radio" name="selectedTopImage" value="{{ imageURL }}" class="image">
+        <input type="radio" name="selectedHeadImage" value="{{ imageURL }}" class="image">
         <img src="{{ imageURL }}" class="image">
       </label>
       {% endfor %}
@@ -41,7 +41,7 @@
 
   <script>
     function validateForm() {
-      const selectedImage = document.querySelector('input[name="selectedTopImage"]:checked');
+      const selectedImage = document.querySelector('input[name="selectedHeadImage"]:checked');
       if (!selectedImage) {
         alert("Please select an image.");
         return false;

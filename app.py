@@ -3,21 +3,29 @@ from flask import (Flask, redirect, render_template, request,
 import os
 import pyodbc
 import json
-from azure.storage.blob import BlobServiceClient
+from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 import requests
-
+import nltk
+from rembg import remove
+from PIL import Image
+from io import BytesIO
+nltk.download('punkt')
+from Outfit import Outfit
 app = Flask(__name__)
 
 current_user = -1
 current_username = " "
 current_wardrobe = " "
 
+# Usage example:
+outfit = Outfit()
+
 @app.route('/')
 def index():
     current_user = -1
     current_username = " "
     print('Request for index page received')
-    return render_template('index.html')
+    return render_template('index.html', outfit=outfit)
 
 @app.route('/FindAThread.ico')
 def findAThreadLogo():
@@ -45,18 +53,9 @@ def signup():
     # Create a cursor object to execute SQL queries
     cursor = cnxn.cursor()
 
-    # Get the maximum UserID and WardrobeID from the USER table
-    cursor.execute("SELECT MAX(UserID) FROM [dbo].[USER]")
-    max_user_id = cursor.fetchone()[0]
-    max_user_id = 1 if max_user_id is None else max_user_id + 1
-
-    cursor.execute("SELECT MAX(WardrobeID) FROM [dbo].[USER]")
-    max_wardrobe_id = cursor.fetchone()[0]
-    max_wardrobe_id = 1 if max_wardrobe_id is None else max_wardrobe_id + 1
-
     # Insert the data into the USER table
-    insert_query = "INSERT INTO [dbo].[USER] (WardrobeID, Password, Email, PhoneNumber, ProfilePictrureURL, Username) VALUES (?, ?, ?, ?, ?, ?)"
-    cursor.execute(insert_query, (None, password, email, phone, None, username))
+    insert_query = "INSERT INTO [dbo].[USER] (Password, Email, PhoneNumber, ProfilePictrureURL, Username) VALUES (?, ?, ?, ?, ?)"
+    cursor.execute(insert_query, (password, email, phone, None, username))
     cnxn.commit()
 
     # Close the cursor and connection
@@ -127,7 +126,7 @@ def skip():
 
 @app.route('/createOutfit', methods=['POST'])
 def createOutfit():
-    return render_template('CreateAnOutfit.html')
+    return render_template('CreateAnOutfit.html', outfit=outfit)
 
 
 def get_nearest_basic_color(hex_code):
@@ -192,7 +191,105 @@ def get_color_name(rgb):
     else:
         return None
 
-def imageProcess(image_url):
+def imageToDatabase(detected_words, labels, image_url, color_name, gender):
+    
+    from nltk.tokenize import word_tokenize
+    
+    #Categories for the clothing items
+    
+    head_objects = ["hat", "cap", "beanie", "visor", "head", "headband"]
+    top_objects = ["outerwear", "top", "shirt", "coat", "brassiere", "dress", "longcoat"]
+    bottom_objects = ["shorts", "pants", " jeans", "trousers", "skirt"]
+    shoes_objects = ["sneakers", "shoes", "boots", "sandals", "flip flops", "slippers"]
+    
+    
+    head_labels = ["headwear", "hat", "cap", "beanie", "visor", "baseball cap", "sun hat", "fedora", "bucket hat", "beret",
+                    "headband", "turban", "bandana", "bonnet", "tiara", "crown", "headscarf", "head wrap", "hairband", "headpiece",
+                    "fascinator", "turquosie", "trilby", "bowler hat", "balaclava", "hijab", "cloche hat", "newsboy cap", "snapback", "headscarf wrap"]
+    
+    top_labels = ["shirt", "blouse", "t-shirt", "sweater", "jacket", "hoodie", "cardigan", "tank top", "camisole", "polo shirt", "top", "dress",
+                     "tunic", "off-the-shoulder top", "crop top", "sleeveless top", "button-up shirt", "kimono", "poncho", "collar", "sleeve", "neck"]
+    
+    bottom_labels = ["jeans", "trousers", "pants", "shorts", "leggings", "skirt", "mini skirt", "denim skirt", "flared skirt", "culottes", "cargo pants", 
+                     "joggers", "capris", "denim shorts", "chinos", "cargo shorts", "bell-bottom pants", "skinny jeans", "wide-leg pants", "palazzo pants", "waist", "thigh"]
+    
+    shoes_labels = ["sneakers", "running shoes", "athletic shoes", "sports shoes", "tennis shoes", "trainers", "boots", "ankle boots", "knee-high boots", "combat boots",
+                    "work boots", "hiking boots", "pumps", "high heels", "stiletto heels", "wedges", "platform heels", "sandals", "flip flops", "slippers",
+                    "loafers", "ballet flats", "oxford shoes", "moccasins", "espadrilles", "slingback shoes", "mary jane shoes", "suede shoes", "leather shoes", "canvas shoes"]
+    
+    def calculate_category(given_labels, potential_labels):
+            given_tokens = set(word_tokenize(' '.join(given_labels)))
+            potential_tokens = set(word_tokenize(' '.join(potential_labels)))
+            intersection_count = len(given_tokens.intersection(potential_tokens))
+            union_count = len(given_tokens.union(potential_tokens))
+            return intersection_count / union_count
+
+    
+    given_objects = [word.lower() for word in detected_words]
+    given_labels = [label.description.lower() for label in labels]
+
+    # Check for exact word-to-word matches
+    if any(obj in given_objects for obj in head_objects):
+        head_score = 1.0
+    else:
+        head_score = calculate_category(given_labels, head_labels)
+
+    if any(obj in given_objects for obj in top_objects):
+        top_score = 1.0
+    else:
+        top_score = calculate_category(given_labels, top_labels)
+
+    if any(obj in given_objects for obj in bottom_objects):
+        bottom_score = 1.0
+    else:
+        bottom_score = calculate_category(given_labels, bottom_labels)
+
+    if any(obj in given_objects for obj in shoes_objects):
+        shoe_score = 1.0
+    else:
+        shoe_score = calculate_category(given_labels, shoes_labels)
+
+    scores = {
+        "Head": head_score,
+        "Top": top_score,
+        "Bottom": bottom_score,
+        "Shoe": shoe_score
+    }
+
+    best_match = max(scores, key=scores.get)
+    print(f"Best Match: {best_match}")
+        
+    if(best_match == 'Head'):
+        category = 2
+    elif(best_match == 'Top'):
+        category = 0
+    elif(best_match == 'Bottom'):
+        category = 1
+    else:
+        category = 3
+        
+    print("Category totals")
+    for categories, score in scores.items():
+        print(f"{categories}: {score}")
+    
+    connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+    cnxn = pyodbc.connect(connection_string)
+
+    # Create a cursor object to execute SQL queries
+    cursor = cnxn.cursor()
+
+
+    # Insert the data into the Clothing table
+    insert_query = "INSERT INTO [dbo].[Clothing] (CategoryID, Gender, Color, Description, ImageURL) VALUES (?, ?, ?, ?, ?)"
+    cursor.execute(insert_query, (category, gender, color_name, None, image_url))
+    cnxn.commit()
+
+    # Close the cursor and connection
+    cursor.close()
+    cnxn.close()
+    
+
+def imageProcess(image_url, gender):
     from google.cloud import vision
     print("Image processing started.")
 
@@ -204,12 +301,20 @@ def imageProcess(image_url):
         client = vision.ImageAnnotatorClient()
 
         # Perform the desired Vision API tasks using the client
-
-        # Example: Perform label detection
+        
         image = vision.Image()
         image.source.image_uri = image_url
 
-        response = client.label_detection(image=image)
+        # Perfom object detection
+        response = client.object_localization(image=image)
+        objects = response.localized_object_annotations
+        detected_word =[obj.name.lower() for obj in objects]
+        
+        for word in detected_word:
+            print(f"Object: {word}")
+        
+        # Perform label detection
+        response = client.label_detection(image=image, max_results=50)
         labels = response.label_annotations
 
         # Print the labels for testing
@@ -217,10 +322,10 @@ def imageProcess(image_url):
         for label in labels:
             print(label.description)
 
-        # Example: Extract dominant colors
+        # Extract dominant colors
         response = client.image_properties(image=image)
         dominant_colors = response.image_properties_annotation.dominant_colors.colors
-
+        
         # Print the dominant colors for testing
         print("Dominant Colors:")
         color = dominant_colors[0].color
@@ -229,6 +334,8 @@ def imageProcess(image_url):
         color_name = get_color_name(color_rgb)
         print(color_name)
         
+        imageToDatabase(detected_word, labels, image_url, color_name, gender)
+
         
         # Return any extracted information or perform further processing
     except Exception as e:
@@ -240,13 +347,13 @@ def imageProcess(image_url):
 
 @app.route('/upload', methods=['POST'])
 def upload():
-    storage_account_key = "lMD3BaFpJCcz5cN7vMa+/XANoUaUOWVINZCeqOvDIu/fWnXTVGU2ysMuZhwWovJwJ+WDbqaL1fbN+AStr2YFfg=="
-    storage_account_name = "findathreadcontainer"
 
     file = request.files['file']
+    #inputFile = Image.open(file)
+    #ouputFile = remove(inputFile)
     gender = request.form['gender']
-    print("GENDER SELCETED: " + gender)
-    if file:
+    print("GENDER SELCETED: " + gender.capitalize())
+    if file:    
         connection_string = "DefaultEndpointsProtocol=https;AccountName=findathreadcontainer;AccountKey=lM/MQ4LQ8XVjlZoz8l122v2bNgIwo3k/Yc6v/WXmwdhZpD6aXDbAqX9h3L8v2IPFTFoC07y120fJ+AStqArU7A==;EndpointSuffix=core.windows.net"
         blob_service_client = BlobServiceClient.from_connection_string(connection_string)
 
@@ -264,7 +371,7 @@ def upload():
             image_url = blob_client.url
 
             # Perform image processing on the uploaded image
-            imageProcess(image_url)
+            imageProcess(image_url, gender)
             return jsonify({'status': 'duplicate'})  # Return duplicate image response
         else:
             # Upload the image
@@ -272,7 +379,7 @@ def upload():
             image_url = blob_client.url
 
             # Perform image processing on the uploaded image
-            imageProcess(image_url)
+            imageProcess(image_url, gender)
             return jsonify({'status': 'success'})
 
         return render_template('AddToWardrobe.html')
@@ -371,28 +478,130 @@ def deleteWardrobe():
     # Handle the case where the wardrobe_id is None
     return 'Failed to delete wardrobe'
 
-@app.route('/tops',methods=['GET', 'POST'])
+
+
+@app.route('/head', methods=['GET', 'POST'])
+def head():
+    try:
+        connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+        cnxn = pyodbc.connect(connection_string)
+
+        cursor = cnxn.cursor()
+        category_id = 2
+
+        cursor.execute(f"SELECT ImageURL FROM Clothing WHERE CategoryId = {category_id}")
+        rows = cursor.fetchall()
+
+        # Extract the image URLs from the query results
+        imageURLs = [row.ImageURL for row in rows if row.ImageURL]
+
+        # Close the cursor and connection
+        cursor.close()
+        return render_template('head.html', imageURLs=imageURLs)
+    except Exception as e:
+        # Handle exceptions appropriately, e.g., log the error and return an error page
+        print(f"Error: {e}")
+        return render_template('head.html')
+
+# Adjust the other methods similarly with the correct column name for 'Category'
+# For example, if the column name is 'CategoryId' for 'tops':
+@app.route('/tops', methods=['GET', 'POST'])
 def tops():
-     # Establish a connection to the database
-    connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
-    cnxn = pyodbc.connect(connection_string)
+    try:
+        connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+        cnxn = pyodbc.connect(connection_string)
 
-    # Create a cursor object to execute SQL queries
-    cursor = cnxn.cursor()
+        cursor = cnxn.cursor()        
+        category_id = 0
 
-    cursor.execute('SELECT ImageURL FROM Clothing')
-    rows = cursor.fetchall()
+        cursor.execute(f"SELECT ImageURL FROM Clothing WHERE CategoryId = {category_id}")
+        rows = cursor.fetchall()
 
-    # Extract the image URLs from the query results
-    imageURLs = [row.ImageURL for row in rows if row.ImageURL]
+        # Extract the image URLs from the query results
+        imageURLs = [row.ImageURL for row in rows if row.ImageURL]
 
-    # Close the cursor and connection
-    cursor.close()
-    cnxn.close()
+        # Close the cursor and connection
+        cursor.close()
+        return render_template('Tops.html', imageURLs=imageURLs)
+    except Exception as e:
+        # Handle exceptions appropriately, e.g., log the error and return an error page
+        print(f"Error: {e}")
+        return render_template('error.html')
 
-    # Render the HTML template and pass the image URLs to it
-    return render_template('Tops.html', imageURLs=imageURLs)
+# Adjust the other methods similarly with the correct column name for 'Category'
+# For example, if the column name is 'CategoryId' for 'tops':
+@app.route('/bottoms', methods=['GET', 'POST'])
+def bottoms():
+    try:
+        connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+        cnxn = pyodbc.connect(connection_string)
+
+        cursor = cnxn.cursor()        
+        category_id = 1
+
+        cursor.execute(f"SELECT ImageURL FROM Clothing WHERE CategoryId = {category_id}")
+        rows = cursor.fetchall()
+
+        # Extract the image URLs from the query results
+        imageURLs = [row.ImageURL for row in rows if row.ImageURL]
+
+        # Close the cursor and connection
+        cursor.close()
+        return render_template('bottoms.html', imageURLs=imageURLs)
+    except Exception as e:
+        # Handle exceptions appropriately, e.g., log the error and return an error page
+        print(f"Error: {e}")
+        return render_template('error.html')
     
+# Adjust the other methods similarly with the correct column name for 'Category'
+# For example, if the column name is 'CategoryId' for 'tops':
+@app.route('/shoes', methods=['GET', 'POST'])
+def shoes():
+    try:
+        connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+        cnxn = pyodbc.connect(connection_string)
 
-if __name__ == '__main__':
-    app.run()
+        cursor = cnxn.cursor()        
+        category_id = 3
+
+        cursor.execute(f"SELECT ImageURL FROM Clothing WHERE CategoryId = {category_id}")
+        rows = cursor.fetchall()
+
+        # Extract the image URLs from the query results
+        imageURLs = [row.ImageURL for row in rows if row.ImageURL]
+
+        # Close the cursor and connection
+        cursor.close()
+        return render_template('shoes.html', imageURLs=imageURLs)
+    except Exception as e:
+        # Handle exceptions appropriately, e.g., log the error and return an error page
+        print(f"Error: {e}")
+        return render_template('error.html')
+
+# Route to display the form to set the head image URL
+@app.route('/set_head', methods=['GET', 'POST'])
+def set_head():
+    head_image_url = request.form.get('selectedHeadImage')
+    outfit.user_head = head_image_url
+    return render_template('CreateAnOutfit.html',outfit=outfit), "Top image URL set successfully: " + head_image_url
+# Route to display the form to set the top image URL
+@app.route('/set_top', methods=['POST'])
+def set_top():
+    top_image_url = request.form.get('selectedTopImage')
+    outfit.user_top = top_image_url
+    return render_template('CreateAnOutfit.html',outfit=outfit), "Top image URL set successfully: " + top_image_url
+
+# Route to display the form to set the bottom image URL
+@app.route('/set_bottom', methods=['GET', 'POST'])
+def set_bottom():
+    bottom_image_url = request.form.get('selectedBottomImage')
+    outfit.user_bottom = bottom_image_url
+    return render_template('CreateAnOutfit.html',outfit=outfit), "Top image URL set successfully: " + bottom_image_url
+
+# Route to display the form to set the shoes image URL
+@app.route('/set_shoes', methods=['GET', 'POST'])
+def set_shoes():
+    shoes_image_url = request.form.get('selectedShoesImage')
+    outfit.user_shoes = shoes_image_url
+    return render_template('CreateAnOutfit.html',outfit=outfit), "Top image URL set successfully: " + shoes_image_url
+
