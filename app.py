@@ -171,8 +171,6 @@ def get_nearest_basic_color(hex_code):
 
     return current_near_color     
 
-
-    
 def get_color_name(rgb):
 
     rgb = tuple(int(value) for value in rgb)
@@ -185,9 +183,7 @@ def get_color_name(rgb):
         color_data = response.json()
         color_name = color_data['name']['value']
         color_hex = color_data['hex']['value']
-        #print (color_hex)
-        print(get_nearest_basic_color(color_hex))
-        return color_name
+        return get_nearest_basic_color(color_hex)
     else:
         return None
 
@@ -207,29 +203,50 @@ def imageToDatabase(detected_words, labels, image_url, color_name, gender):
                     "headband", "turban", "bandana", "bonnet", "tiara", "crown", "headscarf", "head wrap", "hairband", "headpiece",
                     "fascinator", "turquosie", "trilby", "bowler hat", "balaclava", "hijab", "cloche hat", "newsboy cap", "snapback", "headscarf wrap"]
     
-    top_labels = ["shirt", "blouse", "t-shirt", "sweater", "jacket", "hoodie", "cardigan", "tank top", "camisole", "polo shirt", "top", "dress",
-                     "tunic", "off-the-shoulder top", "crop top", "sleeveless top", "button-up shirt", "kimono", "poncho", "collar", "sleeve", "neck"]
+    top_labels = ["sleeve", "collar" , "t-shirt", "button", "pocket", "coat", "dress shirt", "neck", "blazer", "jacket", "formal Wear", "sweatshirt", "jersey", 
+                    "long-sleeved t-shirt", "hoodie", "overcoat", "active shirt", "one-piece garment", "sleeveless shirt", "day dress", "trench coat", 
+                    "lingerie top", "brassiere", "lingerie", "cocktail dress", "vest", "active tank", "tank", "tank top", "workwear", "duster", "gown", 
+                    "chest", "shoulder"]
     
-    bottom_labels = ["jeans", "trousers", "pants", "shorts", "leggings", "skirt", "mini skirt", "denim skirt", "flared skirt", "culottes", "cargo pants", 
-                     "joggers", "capris", "denim shorts", "chinos", "cargo shorts", "bell-bottom pants", "skinny jeans", "wide-leg pants", "palazzo pants", "waist", "thigh"]
+    bottom_labels = ["shorts", "active shorts", "active pants", "trunk", "waist", "jeans" , "torusers", "thigh", "knee", "pocket", "board short", 
+                        "yoga pants", "leggins", "sweatpants", "tights", "cargo pants", "one-piece garment", "day dress"]
     
     shoes_labels = ["sneakers", "running shoes", "athletic shoes", "sports shoes", "tennis shoes", "trainers", "boots", "ankle boots", "knee-high boots", "combat boots",
                     "work boots", "hiking boots", "pumps", "high heels", "stiletto heels", "wedges", "platform heels", "sandals", "flip flops", "slippers",
                     "loafers", "ballet flats", "oxford shoes", "moccasins", "espadrilles", "slingback shoes", "mary jane shoes", "suede shoes", "leather shoes", "canvas shoes"]
     
-    def calculate_category(given_labels, potential_labels):
-            given_tokens = set(word_tokenize(' '.join(given_labels)))
-            potential_tokens = set(word_tokenize(' '.join(potential_labels)))
-            intersection_count = len(given_tokens.intersection(potential_tokens))
-            union_count = len(given_tokens.union(potential_tokens))
-            return intersection_count / union_count
-
+    top_descriptive_labels = {"shirt" : "shirt", "sleeve" : "with sleeve", "collar" : "collared", "t-shirt" : "t-shirt ", "button" : "buttoned", "pocket" : "with pockets", 
+                            "coat" : "coat", "dress shirt" : "dress shirt", "blazer" : "blazer", "jacket" : "jacket", "sweatshirt" : "sweatshirt", "jersey" : "jersey", 
+                            "long-sleeved t-shirt" : "long sleeved shirt", "hoodie" : "hoodie", "overcoat" : "overcoat", "active shirt" : "active shirt", 
+                            "one-piece garment" : "one piece", "sleeveless shirt" : "sleeveless shirt", "day dress" : "dress", "trench coat" : "long coat", 
+                            "lingerie top" : "top", "brassiere" : "brassiere", "lingerie" : "lingerie", "cocktail dress" : "dress", "vest" : "vest", 
+                            "active tank" : "tank", "tank" : "tank", "tank top" : "tank top", "duster" : "loose fitting" , "gown" : "gown"}
     
+    bottom_descriptive_labels = {"shorts" : "shorts", "active shorts" : "active shorts", "active pants" : "pants", "trunk" : "trunks", "jeans" : "jeans",
+                                 "trousers" : " trousers", "pocket" : "with pockets", "board short" : "board shorts", "yoga pants" : "leggins", "leggins" : "leggins", 
+                                 "sweatpants" : "sweatpants", "tights" : "tights", "cargo pants" : "cargo pants", "one-piece garment" : "one piece"}
+    
+    def calculate_category(given_labels, potential_labels):
+        given_tokens = set(word_tokenize(' '.join(given_labels)))
+        potential_tokens = set(word_tokenize(' '.join(potential_labels)))
+        intersection_count = len(given_tokens.intersection(potential_tokens))
+        union_count = len(given_tokens.union(potential_tokens))
+        return intersection_count / union_count
+
+    def get_description(given_labels, descriptive_labels):
+        matched_labels = []
+        for label in given_labels:
+            if label in descriptive_labels:
+                matched_labels.append(descriptive_labels[label])
+        return ', '.join(matched_labels)
+        
+        
     given_objects = [word.lower() for word in detected_words]
     given_labels = [label.description.lower() for label in labels]
 
     # Check for exact word-to-word matches
     if any(obj in given_objects for obj in head_objects):
+        obj_name = set(given_objects).intersection(head_objects)
         head_score = 1.0
     else:
         head_score = calculate_category(given_labels, head_labels)
@@ -263,8 +280,12 @@ def imageToDatabase(detected_words, labels, image_url, color_name, gender):
         category = 2
     elif(best_match == 'Top'):
         category = 0
+        description = get_description(given_labels, top_descriptive_labels)
+        print(f"Image Description : {color_name} {gender}'s {best_match} {description.capitalize()}")
     elif(best_match == 'Bottom'):
         category = 1
+        description = get_description(given_labels, bottom_descriptive_labels)
+        print(f"Image Description : {color_name} {gender}'s {best_match} {description.capitalize()}")
     else:
         category = 3
         
@@ -332,7 +353,6 @@ def imageProcess(image_url, gender):
         color_rgb = (color.red, color.green, color.blue)
         
         color_name = get_color_name(color_rgb)
-        print(color_name)
         
         imageToDatabase(detected_word, labels, image_url, color_name, gender)
 
@@ -385,7 +405,7 @@ def upload():
         return render_template('AddToWardrobe.html')
     else:
         return 'No file selected'
-
+    
 @app.route('/newWardrobe', methods=['POST'])
 def newWardrobe():
     wardrobe_name = request.form.get('wardrobe-name')
