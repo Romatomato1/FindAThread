@@ -2,52 +2,35 @@
 <html>
 <head>
   <title>Shoes</title>
-  <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-    }
-
-    body {
-      background-image: linear-gradient(180deg, rgb(131, 0, 192), rgb(228, 194, 0), rgb(131, 0, 192));
-      background-repeat: repeat;
-      background-size: cover;
-      margin: 0;
-    }
-
-    .image {
-      width: 100px; /* Set the desired width for all images */
-      height: 100px; /* Set the desired height for all images */
-      margin: 10px; /* Adjust the margin between images */
-    }
-
-  </style>
+  <link rel="stylesheet" href="static/bootstrap/css/wardrobe-types.css">
+  <script src="static/bootstrap/js/wadrobe-types.js"></script>
 </head>
 <body>
   <h1>Shoes</h1>
 
   <form method="POST" action="/set_shoes" onsubmit="return validateForm()">
-    <div id="image-container">
-      {% for imageURL in imageURLs %}
+    <div class="image-container">
+      {% for item_data in items_data %}
       <label>
-        <input type="radio" name="selectedShoesImage" value="{{ imageURL }}" class="image">
-        <img src="{{ imageURL }}" class="image">
+        <img src="{{ item_data.imageURL }}" class="image" onclick="handleImageClick(this)" title="Gender: {{ item_data.gender }}&#10;Color: {{ item_data.color }}&#10;Description: {{ item_data.description }}">
+        <input type="radio" name="selectedShoesImage" value="{{ item_data.imageURL }}" class = "hidden-input" onmouseover="displayImageInfo(event, {{ item_data | tojson }})">
+        <div class="item-details">
+          <span class="item-details-display"> <p>Gender: {{ item_data.gender }}</p>
+          <p>Color: {{ item_data.color }}</p>
+          <p>Description: {{ item_data.description }}</p> </span>
+        </div>
       </label>
       {% endfor %}
     </div>
 
-    <button type="submit">Select Images</button>
+    <button type="submit" class="button submit-button"> Select Images</button>
+    <button type="button" class="button delete-button" onclick="deleteSelectedImage()">Delete Image</button>
   </form>
-
-  <script>
-    function validateForm() {
-      const selectedImage = document.querySelector('input[name="selectedShoesImage"]:checked');
-      if (!selectedImage) {
-        alert("Please select an image.");
-        return false;
-      }
-      return true;
-    }
-  </script>
+  
+  <div class="d-grid gap-2 d-sm-flex justify-content-sm-center my-2">
+    <form method="post" action="{{ url_for('createOutfit') }}">
+        <button type="submit" class="button">←  Back To Outfit Creation</button>
+    </form>
+  </div>
 </body>
 </html>
