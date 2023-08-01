@@ -11,21 +11,16 @@ from PIL import Image
 from io import BytesIO
 nltk.download('punkt')
 from Outfit import Outfit
+from User import User
 app = Flask(__name__)
 
-current_user = -1
-current_username = " "
-current_wardrobe = " "
-
-# Usage example:
+user = User()
 outfit = Outfit()
 
 @app.route('/')
 def index():
-    current_user = -1
-    current_username = " "
     print('Request for index page received')
-    return render_template('index.html', outfit=outfit)
+    return render_template('index.html', outfit=outfit, user=user)
 
 @app.route('/FindAThread.ico')
 def findAThreadLogo():
@@ -106,14 +101,11 @@ def loginauth():
         print("User authenticated")
         query = "SELECT UserID AS count FROM [dbo].[USER] WHERE [Username] = ? AND [Password] = ?"
         cursor.execute(query, (username, password))
-        result = cursor.fetchone()[0]
-        current_user = result
-        current_username = username
-        print (current_user)
-        print (current_username)
+        user.current_user = cursor.fetchone()[0]
+        print (user.current_user)
         # Existing wardrobe data from the database
         existing_wardrobes = get_existing_wardrobes()  # Replace with your implementation
-        return render_template('AddToWardrobe.html', existing_wardrobes=existing_wardrobes)
+        return render_template('AddToWardrobe.html', existing_wardrobes=existing_wardrobes,user=user)
     else:
         error_message = 'Invalid username or password'
         print(error_message)
@@ -127,6 +119,15 @@ def skip():
 @app.route('/createOutfit', methods=['POST'])
 def createOutfit():
     return render_template('CreateAnOutfit.html', outfit=outfit)
+
+
+@app.route('/skip', methods=['POST'])
+def skip():
+    return render_template('StartScreen.html')
+
+@app.route('/createOutfit', methods=['POST'])
+def createOutfit():
+    return render_template('CreateAnOutfit.html', outfit=outfit, user=user)
 
 
 def get_nearest_basic_color(hex_code):
@@ -193,15 +194,14 @@ def imageToDatabase(detected_words, labels, image_url, color_name, gender):
     
     #Categories for the clothing items
     
-    head_objects = ["hat", "cap", "beanie", "visor", "head", "headband"]
+    head_objects = ["hat", "cap", "beanie", "visor", "headband", "sun hat", "fedora"]
     top_objects = ["outerwear", "top", "shirt", "coat", "brassiere", "dress", "longcoat"]
     bottom_objects = ["shorts", "pants", " jeans", "trousers", "skirt"]
-    shoes_objects = ["sneakers", "shoes", "boots", "sandals", "flip flops", "slippers"]
+    shoes_objects = ["sneakers", "shoe", "boot", "sandals", "slippers"]
     
     
     head_labels = ["headwear", "hat", "cap", "beanie", "visor", "baseball cap", "sun hat", "fedora", "bucket hat", "beret",
-                    "headband", "turban", "bandana", "bonnet", "tiara", "crown", "headscarf", "head wrap", "hairband", "headpiece",
-                    "fascinator", "turquosie", "trilby", "bowler hat", "balaclava", "hijab", "cloche hat", "newsboy cap", "snapback", "headscarf wrap"]
+                    "headband", "turban", "bandana", "cricket cap", "helmet"]
     
     top_labels = ["sleeve", "collar" , "t-shirt", "button", "pocket", "coat", "dress shirt", "neck", "blazer", "jacket", "formal Wear", "sweatshirt", "jersey", 
                     "long-sleeved t-shirt", "hoodie", "overcoat", "active shirt", "one-piece garment", "sleeveless shirt", "day dress", "trench coat", 
@@ -214,6 +214,7 @@ def imageToDatabase(detected_words, labels, image_url, color_name, gender):
     shoes_labels = ["sneakers", "running shoes", "athletic shoes", "sports shoes", "tennis shoes", "trainers", "boots", "ankle boots", "knee-high boots", "combat boots",
                     "work boots", "hiking boots", "pumps", "high heels", "stiletto heels", "wedges", "platform heels", "sandals", "flip flops", "slippers",
                     "loafers", "ballet flats", "oxford shoes", "moccasins", "espadrilles", "slingback shoes", "mary jane shoes", "suede shoes", "leather shoes", "canvas shoes"]
+
     
     top_descriptive_labels = {"shirt" : "shirt", "sleeve" : "with sleeve", "collar" : "collared", "t-shirt" : "t-shirt ", "button" : "buttoned", "pocket" : "with pockets", 
                             "coat" : "coat", "dress shirt" : "dress shirt", "blazer" : "blazer", "jacket" : "jacket", "sweatshirt" : "sweatshirt", "jersey" : "jersey", 
@@ -223,8 +224,10 @@ def imageToDatabase(detected_words, labels, image_url, color_name, gender):
                             "active tank" : "tank", "tank" : "tank", "tank top" : "tank top", "duster" : "loose fitting" , "gown" : "gown"}
     
     bottom_descriptive_labels = {"shorts" : "shorts", "active shorts" : "active shorts", "active pants" : "pants", "trunk" : "trunks", "jeans" : "jeans",
-                                 "trousers" : " trousers", "pocket" : "with pockets", "board short" : "board shorts", "yoga pants" : "leggins", "leggins" : "leggins", 
+                                 "trousers" : " trousers", "pocket" : "with pockets", "board short" : "board shorts", "yoga pants" : "yoga pants", "leggins" : "leggins", 
                                  "sweatpants" : "sweatpants", "tights" : "tights", "cargo pants" : "cargo pants", "one-piece garment" : "one piece"}
+    
+    shoe_descriptive_labels = {"sandal" : "sandals", "high heels" : "high heels", "dress shoe" : "dress shoe", "slipper" : "slippers", "sneakers" : "sneakers", "sportswear" : "sportswear"}
     
     def calculate_category(given_labels, potential_labels):
         given_tokens = set(word_tokenize(' '.join(given_labels)))
@@ -238,7 +241,8 @@ def imageToDatabase(detected_words, labels, image_url, color_name, gender):
         for label in given_labels:
             if label in descriptive_labels:
                 matched_labels.append(descriptive_labels[label])
-        return ', '.join(matched_labels)
+            
+        return ', '.join(matched_labels).capitalize()
         
         
     given_objects = [word.lower() for word in detected_words]
@@ -246,7 +250,6 @@ def imageToDatabase(detected_words, labels, image_url, color_name, gender):
 
     # Check for exact word-to-word matches
     if any(obj in given_objects for obj in head_objects):
-        obj_name = set(given_objects).intersection(head_objects)
         head_score = 1.0
     else:
         head_score = calculate_category(given_labels, head_labels)
@@ -278,16 +281,54 @@ def imageToDatabase(detected_words, labels, image_url, color_name, gender):
         
     if(best_match == 'Head'):
         category = 2
+        
+        if(scores["Head"] == 1.0): #get the name of the object for the descriptiom
+            obj_name_set = set(given_objects).intersection(head_objects)
+            obj_name = ", ".join(obj_name_set)
+        else:
+            obj_name = "headwear"
+        
+        description = f"{color_name} {gender}'s {obj_name}"
+        print(f"Image Description: {description}")
+        
     elif(best_match == 'Top'):
-        category = 0
-        description = get_description(given_labels, top_descriptive_labels)
-        print(f"Image Description : {color_name} {gender}'s {best_match} {description.capitalize()}")
+        category = 0 #get the category for categoryID
+        
+        if(scores["Top"] == 1.0): #get the name of the object for the descriptiom
+            obj_name_set = set(given_objects).intersection(top_objects)
+            obj_name = ", ".join(obj_name_set)
+        else:
+            obj_name = best_match
+        
+        description_by_labels = get_description(given_labels, top_descriptive_labels)
+        description = f"{color_name} {gender}'s {obj_name} {description_by_labels}"
+        print(f"Image Description: {description}")
+        
     elif(best_match == 'Bottom'):
         category = 1
-        description = get_description(given_labels, bottom_descriptive_labels)
-        print(f"Image Description : {color_name} {gender}'s {best_match} {description.capitalize()}")
+        
+        if(scores["Bottom"] == 1.0): #get the name of the object for the descriptiom
+            obj_name_set = set(given_objects).intersection(bottom_objects)
+            obj_name = ", ".join(obj_name_set)
+        else:
+            obj_name = best_match
+            
+        description_by_labels = get_description(given_labels, bottom_descriptive_labels)
+        description = f"{color_name} {gender}'s {obj_name} {description_by_labels}"
+        print(f"Image Description: {description}")
+        
     else:
         category = 3
+        
+        if(scores["Shoe"] == 1):
+            obj_name_set = set(given_objects).intersection(shoes_objects)
+            obj_name = ", ".join(obj_name_set)
+        else:
+            obj_name = best_match
+            
+        description_by_labels = get_description(given_labels, shoe_descriptive_labels)
+        description = f"{color_name} {gender}'s {obj_name} {description_by_labels}"
+        print(f"Image Description: {description}")
         
     print("Category totals")
     for categories, score in scores.items():
@@ -302,7 +343,7 @@ def imageToDatabase(detected_words, labels, image_url, color_name, gender):
 
     # Insert the data into the Clothing table
     insert_query = "INSERT INTO [dbo].[Clothing] (CategoryID, Gender, Color, Description, ImageURL) VALUES (?, ?, ?, ?, ?)"
-    cursor.execute(insert_query, (category, gender, color_name, None, image_url))
+    cursor.execute(insert_query, (category, gender, color_name, description, image_url))
     cnxn.commit()
 
     # Close the cursor and connection
@@ -422,15 +463,13 @@ def newWardrobe():
 
     query = "SELECT WardrobeID AS count FROM [dbo].[Wardrobe] WHERE [WardrobeName] = ?"
     cursor.execute(query, wardrobe_name)
-    result = cursor.fetchone()[0]
-
-    current_wardrobe =  result
-    print (current_wardrobe)
+    user.current_wardrobe =  cursor.fetchone()[0]
+    print (user.current_wardrobe)
     # # Close the cursor and connection
     cursor.close()
     cnxn.close()
 
-    return render_template('StartScreen.html')
+    return render_template('StartScreen.html',user=user)
 
 @app.route('/selectWardrobe', methods=['POST'])
 def selectWardrobe():
@@ -450,12 +489,12 @@ def selectWardrobe():
             result = cursor.fetchone()
 
             if result is not None:
-                current_wardrobe = result[0]
-                print(current_wardrobe)
+                user.current_wardrobe = result[0]
+                print(user.current_wardrobe)
                 # Close the cursor and connection
                 cursor.close()
                 cnxn.close()
-                return render_template('StartScreen.html')
+                return render_template('StartScreen.html',user=user)
             
             # Handle the case where no records were found
             return 'No wardrobe found with the specified name'
@@ -498,7 +537,35 @@ def deleteWardrobe():
     # Handle the case where the wardrobe_id is None
     return 'Failed to delete wardrobe'
 
+@app.route('/delete_image', methods=['POST'])
+def delete_image():
+    try:
+        image_url = request.json.get('imageURL')
 
+        # Perform validation if needed (e.g., check if the imageURL is not empty)
+
+        # Establish a connection to the database
+        connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+        cnxn = pyodbc.connect(connection_string)
+
+        # Create a cursor object to execute SQL queries
+        cursor = cnxn.cursor()
+
+        # Perform the delete operation using the image_url
+        delete_query = "DELETE FROM [dbo].[Clothing] WHERE [ImageURL] = ?"
+        cursor.execute(delete_query, image_url)
+        cnxn.commit()
+
+        # Close the cursor and connection
+        cursor.close()
+        cnxn.close()
+
+        # Return a success response to the frontend
+        return jsonify({'message': 'Image deleted successfully.'}), 200
+
+    except Exception as e:
+        # Handle any errors that occurred during database access
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/head', methods=['GET', 'POST'])
 def head():
@@ -506,22 +573,31 @@ def head():
         connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
         cnxn = pyodbc.connect(connection_string)
 
-        cursor = cnxn.cursor()
+        cursor = cnxn.cursor()        
         category_id = 2
 
-        cursor.execute(f"SELECT ImageURL FROM Clothing WHERE CategoryId = {category_id}")
+        cursor.execute(f"SELECT ImageURL, Gender, Color, Description FROM Clothing WHERE CategoryId = {category_id}")
         rows = cursor.fetchall()
 
         # Extract the image URLs from the query results
-        imageURLs = [row.ImageURL for row in rows if row.ImageURL]
-
+        items_data = []
+        
+        for row in rows:
+            item_data = {
+                'imageURL': row.ImageURL,
+                'gender': row.Gender,
+                'color': row.Color,
+                'description': row.Description
+            }
+            items_data.append(item_data)
+        
         # Close the cursor and connection
         cursor.close()
-        return render_template('head.html', imageURLs=imageURLs)
+        return render_template('head.html', items_data=items_data)
     except Exception as e:
         # Handle exceptions appropriately, e.g., log the error and return an error page
         print(f"Error: {e}")
-        return render_template('head.html')
+        return render_template('error.html')
 
 # Adjust the other methods similarly with the correct column name for 'Category'
 # For example, if the column name is 'CategoryId' for 'tops':
@@ -534,15 +610,24 @@ def tops():
         cursor = cnxn.cursor()        
         category_id = 0
 
-        cursor.execute(f"SELECT ImageURL FROM Clothing WHERE CategoryId = {category_id}")
+        cursor.execute(f"SELECT ImageURL, Gender, Color, Description FROM Clothing WHERE CategoryId = {category_id}")
         rows = cursor.fetchall()
 
         # Extract the image URLs from the query results
-        imageURLs = [row.ImageURL for row in rows if row.ImageURL]
-
+        items_data = []
+        
+        for row in rows:
+            item_data = {
+                'imageURL': row.ImageURL,
+                'gender': row.Gender,
+                'color': row.Color,
+                'description': row.Description
+            }
+            items_data.append(item_data)
+        
         # Close the cursor and connection
         cursor.close()
-        return render_template('Tops.html', imageURLs=imageURLs)
+        return render_template('Tops.html', items_data=items_data)
     except Exception as e:
         # Handle exceptions appropriately, e.g., log the error and return an error page
         print(f"Error: {e}")
@@ -559,15 +644,24 @@ def bottoms():
         cursor = cnxn.cursor()        
         category_id = 1
 
-        cursor.execute(f"SELECT ImageURL FROM Clothing WHERE CategoryId = {category_id}")
+        cursor.execute(f"SELECT ImageURL, Gender, Color, Description FROM Clothing WHERE CategoryId = {category_id}")
         rows = cursor.fetchall()
 
         # Extract the image URLs from the query results
-        imageURLs = [row.ImageURL for row in rows if row.ImageURL]
-
+        items_data = []
+        
+        for row in rows:
+            item_data = {
+                'imageURL': row.ImageURL,
+                'gender': row.Gender,
+                'color': row.Color,
+                'description': row.Description
+            }
+            items_data.append(item_data)
+        
         # Close the cursor and connection
         cursor.close()
-        return render_template('bottoms.html', imageURLs=imageURLs)
+        return render_template('bottoms.html', items_data=items_data)
     except Exception as e:
         # Handle exceptions appropriately, e.g., log the error and return an error page
         print(f"Error: {e}")
@@ -584,15 +678,24 @@ def shoes():
         cursor = cnxn.cursor()        
         category_id = 3
 
-        cursor.execute(f"SELECT ImageURL FROM Clothing WHERE CategoryId = {category_id}")
+        cursor.execute(f"SELECT ImageURL, Gender, Color, Description FROM Clothing WHERE CategoryId = {category_id}")
         rows = cursor.fetchall()
 
         # Extract the image URLs from the query results
-        imageURLs = [row.ImageURL for row in rows if row.ImageURL]
-
+        items_data = []
+        
+        for row in rows:
+            item_data = {
+                'imageURL': row.ImageURL,
+                'gender': row.Gender,
+                'color': row.Color,
+                'description': row.Description
+            }
+            items_data.append(item_data)
+        
         # Close the cursor and connection
         cursor.close()
-        return render_template('shoes.html', imageURLs=imageURLs)
+        return render_template('shoes.html', items_data=items_data)
     except Exception as e:
         # Handle exceptions appropriately, e.g., log the error and return an error page
         print(f"Error: {e}")
@@ -625,3 +728,87 @@ def set_shoes():
     outfit.user_shoes = shoes_image_url
     return render_template('CreateAnOutfit.html',outfit=outfit), "Top image URL set successfully: " + shoes_image_url
 
+@app.route('/saveOutfit', methods=['POST'])
+def saveOutfit():
+     # Establish a connection to the database
+    connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+    cnxn = pyodbc.connect(connection_string)
+
+    # # Create a cursor object to execute SQL queries
+    cursor = cnxn.cursor()
+
+    insert_query = "INSERT INTO [dbo].UserOutfits (UserID, Head, Tops, Bottom, Shoes) VALUES (?,?,?,?,?)"
+    cursor.execute(insert_query, (user.current_user,outfit.user_head,outfit.user_top,outfit.user_bottom,outfit.user_shoes))
+    cnxn.commit()
+
+    # # Close the cursor and connection
+    cursor.close()
+    cnxn.close()
+
+    return render_template('CreateAnOutfit.html',outfit=outfit,user=user)
+
+# @app.route('/loadOutfit', methods=['POST'])
+# def loadOutfit():
+#     wardrobe_id = request.form.get('existing-wardrobe')
+#     print (wardrobe_id)
+#     if wardrobe_id is not None:
+#         try:
+#             # Establish a connection to the database
+#             connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+#             cnxn = pyodbc.connect(connection_string)
+
+#             # Create a cursor object to execute SQL queries
+#             cursor = cnxn.cursor()
+
+#             query = "SELECT WardrobeID AS count FROM [dbo].[Wardrobe] WHERE [WardrobeID] = ?"
+#             cursor.execute(query, wardrobe_id)
+#             result = cursor.fetchone()
+
+#             if result is not None:
+#                 current_wardrobe = result[0]
+#                 print(current_wardrobe)
+#                 # Close the cursor and connection
+#                 cursor.close()
+#                 cnxn.close()
+#                 return render_template('StartScreen.html')
+            
+#             # Handle the case where no records were found
+#             return 'No wardrobe found with the specified name'
+        
+#         except Exception as e:
+#             # Handle any errors that occurred during database access
+#             return f'Error accessing the database: {str(e)}'
+    
+#     # Handle the case where the wardrobe_name is None
+#     return 'Failed to select wardrobe'
+
+# @app.route('/deleteOutfit', methods=['POST'])
+# def deleteOutfit():
+#     wardrobe_id = request.form.get('delete-wardrobe')
+    
+#     if wardrobe_id is not None:
+#         try:
+#             # Establish a connection to the database
+#             connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+#             cnxn = pyodbc.connect(connection_string)
+
+#             # Create a cursor object to execute SQL queries
+#             cursor = cnxn.cursor()
+
+#             # Perform the delete operation using the wardrobe_id
+#             delete_query = "DELETE FROM [dbo].[Wardrobe] WHERE [WardrobeID] = ?"
+#             cursor.execute(delete_query, wardrobe_id)
+#             cnxn.commit()
+
+#             # Close the cursor and connection
+#             cursor.close()
+#             cnxn.close()
+
+#             return render_template('index.html')
+        
+#         except Exception as e:
+#             # Handle any errors that occurred during database access
+#             return f'Error accessing the database: {str(e)}'
+    
+#     # Handle the case where the wardrobe_id is None
+#     return 'Failed to delete wardrobe'
