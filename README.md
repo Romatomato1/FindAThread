@@ -1,2 +1,7 @@
-# FindAThread
-FindAThread
+Project title: Virtual Outfit Planner (FindAThread)
+
+The main aim of this capstone project was to design and develop an outfit design software where a user can create and manage the clothes in their possession using their wardrobes. The project was divided into three distinct functionalities: user accounts, image processing and serialization, and outfit creation. Culminating in a streamlined system where a user can create an outfit from the images they uploaded.
+The way we approached creating this application was through some user-based research to see what prospective users would want from this application. After this, we did our own research to find the best possible ways to make this app convenient and easy to use for the problem we are solving. We found that using a three-tier architecture was the best way to implement a cloud-based web application with database functionality.
+The problem we sought to solve was the looming stress of planning an outfit every morning, to which the solution through our research came about making an outfit planner with a virtual wardrobe. We found that Google’s Vision API could be used to process images of clothing items uploaded by the users. The result of the image processing gives us some valuable information which we then use to categorize the clothing for easier selection. 
+We used a Flask app to run our web page locally. Our webpage was built using HTML, CSS, and JavaScript. And the server side of the code, all in Python, implementing object-oriented principles, was then used to have connections from the database to the front end. The database schemas were written in MySQL utilizing Azure SQL Databases.
+The key to this project was maintaining open lines of communication as well as version control through our GitHub. Despite challenges we maintained persistence to having at a minimum 3 meetings per week to share the state of our respective sections.
