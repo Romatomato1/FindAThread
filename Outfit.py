@@ -1,9 +1,9 @@
 class Outfit:
     def __init__(self):
-        self._user_head = "https://findathreadcontainer.blob.core.windows.net/imagestorage/head.jpg"
-        self._user_top = "https://findathreadcontainer.blob.core.windows.net/imagestorage/Top.jpg"
-        self._user_bottom = "https://findathreadcontainer.blob.core.windows.net/imagestorage/Bottom.jpg"
-        self._user_shoes = "https://findathreadcontainer.blob.core.windows.net/imagestorage/shoes.jpg"
+        self._user_head = "https://findathreadcontainer.blob.core.windows.net/imagestorage/head.png"
+        self._user_top = "https://findathreadcontainer.blob.core.windows.net/imagestorage/Top.png"
+        self._user_bottom = "https://findathreadcontainer.blob.core.windows.net/imagestorage/Bottom.png"
+        self._user_shoes = "https://findathreadcontainer.blob.core.windows.net/imagestorage/shoes (3).png"
 
     @property
     def user_head(self):

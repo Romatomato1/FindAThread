@@ -26,15 +26,51 @@
       </div>
     </div>
     <div class="right-half">
-      <form method="post" action="{{ url_for('createOutfit') }}">
-        <button class="button">Create Outfit</button>
+      <form method="post" action="{{ url_for('logout') }}" class="logout-button">
+        <button type="submit" class="button"><span class="text">Logout</span></button>
       </form>
+      <div class="save-outfit-container">
+        <div class="save-outfit-form">
+          <h2 class="outfit-heading">Create a New Outfit</h2>
+          <form method="post" action="{{ url_for('createOutfit') }}">
+            <button class="button">Create Outfit</button>
+            </form>
+            <h2 class="outfit-heading">Load Existing Outfit</h2>
+            <div class="dropdown-container">
+                <form method="post" action="{{ url_for('loadOutfit') }}" id="select-form">
+                    <select class="dropdown" name="existing-outfits">
+                        <option value="">Select an existing outfit</option>
+                        {% for outfit in existing_outfits %}
+                            <option value="{{ outfit.id }}">{{ outfit.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <button class="button" type="submit">Select</button>
+                </form>
+              </div>
+          
+          <!-- Delete Wardrobe Form -->
+        <h2 class="outfit-heading">Delete Outfit</h2>
+        <div class="dropdown-container">
+            <form method="post" action="{{ url_for('deleteOutfit') }}" id="delete-form">
+                <select class="dropdown" name="delete-outfit">
+                    <option value="">Select an existing outfit</option>
+                    {% for outfit in existing_outfits %}
+                        <option value="{{ outfit.id }}">{{ outfit.name }}</option>
+                    {% endfor %}
+                </select>
+                <button class="button" type="submit">Delete</button>
+            </form>
+          </div>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
   
+  
+
     <!-- Gender Pop-up Block -->
     <div class="gender-form" id="genderForm">
-      <p>What is your gender?</p>
+      <p>Choose a Sizing Metric??</p>
       <div class="gender-radio">
         <input type="radio" id="maleGender" name="gender" value="Male">
         <label for="maleGender">Male</label>
@@ -49,5 +85,29 @@
       </div>
       <button class="button submit-button" onclick="uploadImage()">Submit</button>
     </div>
+    <!-- JavaScript Alerts -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function() { 
+        // Select Existing Wardrobe Form
+        var selectForm = document.querySelector('#select-form');
+        selectForm.addEventListener('submit', function(event) {
+          var selectedOption = selectForm.querySelector('.dropdown').value;
+          if (selectedOption === '') {
+            event.preventDefault(); // Prevent form submission
+            alert("Please select an outfit.");
+          }
+        });
+
+        // Delete Wardrobe Form
+        var deleteForm = document.querySelector('#delete-form');
+        deleteForm.addEventListener('submit', function(event) {
+          var selectedOption = deleteForm.querySelector('.dropdown').value;
+          if (selectedOption === '') {
+            event.preventDefault(); // Prevent form submission
+            alert("Please select an existing outfit to delete.");
+          }
+        });
+      });
+    </script>
 </body>
 </html>

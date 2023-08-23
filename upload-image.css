@@ -1,170 +1,232 @@
 html, body {
-    height: 100%;
-    margin: 0;
+  height: 100%;
+  margin: 0;
 }
 
 .container {
-    display: flex;
-    width: 100%;
-    height: 100vh;
-    margin: 0;
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  margin: 0;
 }
 
 .left-half {
-    flex: 1;
-    background-image: linear-gradient(180deg, rgb(131, 0, 192), rgb(228, 194, 0));
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    position: relative;
+  flex: 1;
+  background-image: linear-gradient(180deg, rgb(131, 0, 192), rgb(228, 194, 0));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
 }
 .header {
-    position: fixed;
-    top: 1%;
-    left: 0;
-    width: 48.8%;
-    background-color: #321cac;
-    padding: 10px;
-    text-align: center;
-    color: white;
-    font-size: 24px;
-    font-weight: bold;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  }
+  position: fixed;
+  top: 1%;
+  left: 0;
+  width: 48.8%;
+  background-color: #321cac;
+  padding: 10px;
+  text-align: center;
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
 
 .form{
-    position: relative;
-    width: 50%;
-    height: 200px;
-    border: 3px dashed grey;
-    border-radius: 10px;
+  position: relative;
+  width: 50%;
+  height: 200px;
+  border: 3px dashed grey;
+  border-radius: 10px;
 }
 
 .form div{
-    width: 100%;
-    height: 100%;
-    text-align: center;
-    line-height: 170px;
-    color: black;
-    font-family: Arial;
-    position: absolute;
-    top: 0%;
-    z-index: 1;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  line-height: 170px;
+  color: black;
+  font-family: Arial;
+  position: absolute;
+  top: 0%;
+  z-index: 1;
 }
 
 .gender-form {
-  display: none;
-  position: absolute;
-  top: 50%;
-  left: 25%;
-  transform: translate(-50%, -50%);
-  border: 1px solid #ccc;
-  padding: 10px;
-  background-image: linear-gradient(180deg, rgb(131, 0, 192), rgb(228, 194, 0));
-  z-index: 999; /* Ensure the pop-up is above other elements */
-  width: 20%; /* Update the width to your desired value, e.g., 70% */
-  height: 150px
+display: none;
+position: absolute;
+top: 50%;
+left: 25%;
+transform: translate(-50%, -50%);
+border: 1px solid #ccc;
+padding: 10px;
+background-color: rgb(241, 240, 241);
+z-index: 999; /* Ensure the pop-up is above other elements */
+width: 20%; /* Update the width to your desired value, e.g., 70% */
+height: 150px
 }
 
 /* Add custom styles for radio buttons to improve formatting */
 .gender-radio {
-  display: flex;
-  align-items: center;
-  margin-bottom: 5px;
+display: flex;
+align-items: center;
+margin-bottom: 5px;
 }
 
 .gender-radio input[type="radio"] {
-  margin-right: 5px;
+margin-right: 5px;
 }
 
 .form input{
-    position: relative;
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    outline: none;
-    opacity: 0;
-    z-index: 2;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  outline: none;
+  opacity: 0;
+  z-index: 2;
 }
 
 .form button {
-        border-radius: 10px;
-        padding: 10px 20px;
-        background: #1950A3;
-        outline: none;
-        border: none;
-        color: white;
-        font-size: 16px;
+      border-radius: 10px;
+      padding: 10px 20px;
+      background: #1950A3;
+      outline: none;
+      border: none;
+      color: white;
+      font-size: 16px;
 }
 
 
 
 #fileName::before {
-        content: 'File Name:';
+      content: 'File Name:';
 }
 
 #fileName {
-        position: relative;
-        top: 10px;
+      position: relative;
+      top: 10px;
 }
-  
+
 .right-half {
-    flex: 1;
-    background-image: linear-gradient(180deg, rgb(228, 194, 0),rgb(131, 0, 192));
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  flex: 1;
+  background-image: linear-gradient(180deg, rgb(228, 194, 0),rgb(131, 0, 192));
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .button {
-    position: relative;
-    overflow: hidden;
-    height: 3rem;
-    padding: 0 2rem;
-    border-radius: 1.5rem;
-    background: #3d3a4e;
-    background-size: 400%;
-    color: #fff;
-    border: none;
-  }
+  position: relative;
+  overflow: hidden;
+  height: 3rem;
+  padding: 0 2rem;
+  border-radius: 1.5rem;
+  background: #3d3a4e;
+  background-size: 400%;
+  color: #fff;
+  border: none;
+}
 
-  .submit-button {
-    position: relative;
-    overflow: hidden;
-    height: 2rem;
-    padding: 0 2rem;
-    border-radius: 1.5rem;
-    background: #3d3a4e;
-    background-size: 400%;
-    color: #fff;
-    border: none;
-  }
+.submit-button {
+  position: relative;
+  overflow: hidden;
+  height: 2rem;
+  padding: 0 2rem;
+  border-radius: 1.5rem;
+  background: #3d3a4e;
+  background-size: 400%;
+  color: #fff;
+  border: none;
+}
 
-  .button:hover::before {
-    transform: scaleX(1);
-  }
-  
-  .button-content {
-    position: relative;
-    z-index: 1;
-  }
-  
-  .button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    transform: scaleX(0);
-    transform-origin: 0 50%;
-    width: 100%;
-    height: inherit;
-    border-radius: inherit;
-    background: linear-gradient(
-      82.3deg,
-      rgba(150, 93, 233, 1) 10.8%,
-      rgba(99, 88, 238, 1) 94.3%
-    );
-    transition: all 0.475s;
-  }
+.submit-button:hover::before {
+  transform: scaleX(1);
+}
+
+.submit-button:disabled {
+  background: linear-gradient(
+    82.3deg,
+    rgba(150, 93, 233, 1) 10.8%,
+    rgba(99, 88, 238, 1) 94.3%
+  );
+  cursor: not-allowed;
+}
+
+.button:hover::before {
+  transform: scaleX(1);
+}
+
+.button-content {
+  position: relative;
+  z-index: 1;
+}
+
+.button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  width: 100%;
+  height: inherit;
+  border-radius: inherit;
+  background: linear-gradient(
+    82.3deg,
+    rgba(150, 93, 233, 1) 10.8%,
+    rgba(99, 88, 238, 1) 94.3%
+  );
+  transition: all 0.475s;
+}
+
+.logout-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 10px;
+}
+
+/* Custom Styles for Wardrobe */
+.outfit-heading {
+  text-align: center;
+  font-size: 24px;
+  color: #373B44;
+  margin-bottom: 20px;
+}
+
+.dropdown-container {
+  margin-bottom: 20px;
+}
+
+.dropdown {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background-color: #fff;
+  color: #373B44;
+  font-size: 16px;
+}
+
+/* Add new styling for the container */
+.save-outfit-container {
+  position: absolute;
+  top: 50%;
+  right: 160px;
+  transform: translateY(-50%);
+  z-index: 999; /* Set a higher z-index value */
+  padding-right: 20px;
+}
+
+/* Adjust the form width as needed */
+.save-outfit-form {
+  width: 400px;
+  height: 450px;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+}

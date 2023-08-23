@@ -1,5 +1,5 @@
 from flask import (Flask, redirect, render_template, request,
-                   send_from_directory, url_for, jsonify)
+                   send_from_directory, url_for, jsonify, flash)
 import os
 import pyodbc
 import json
@@ -13,14 +13,14 @@ nltk.download('punkt')
 from Outfit import Outfit
 from User import User
 app = Flask(__name__)
-
+app.secret_key = 'FindAThreadSecretKey'
 user = User()
 outfit = Outfit()
 
 @app.route('/')
 def index():
     print('Request for index page received')
-    return render_template('index.html', outfit=outfit, user=user)
+    return render_template('index.html', user=user)
 
 @app.route('/FindAThread.ico')
 def findAThreadLogo():
@@ -42,7 +42,7 @@ def signup():
     password = request.form['password']
 
     # Establish a connection to the database
-    connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+connection_string
     cnxn = pyodbc.connect(connection_string)
 
     # Create a cursor object to execute SQL queries
@@ -60,12 +60,12 @@ def signup():
 
 def get_existing_wardrobes():
     # Establish a connection to the database
-    connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+connection_string
     conn = pyodbc.connect(connection_string)
 
-    # Execute the query to retrieve existing wardrobe names
+    # Execute the query to retrieve existing wardrobe IDs and names
     cursor = conn.cursor()
-    cursor.execute("SELECT WardrobeID, WardrobeName FROM WARDROBE")
+    cursor.execute("SELECT W.WardrobeID, W.WardrobeName FROM UserWardrobe UW JOIN WARDROBE W ON UW.WardrobeID = W.WardrobeID WHERE UW.UserID = ?", user.current_user)
     rows = cursor.fetchall()
 
     # Create a list of dictionaries with wardrobe IDs and names
@@ -74,7 +74,8 @@ def get_existing_wardrobes():
     # Close the cursor and connection
     cursor.close()
     conn.close()
-    print (existing_wardrobes)
+
+    print(existing_wardrobes)
     return existing_wardrobes
 
 @app.route('/loginauth', methods=['POST'])
@@ -85,7 +86,7 @@ def loginauth():
 
 
     # Establish a connection to the database
-    connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+connection_string
     cnxn = pyodbc.connect(connection_string)
     cursor = cnxn.cursor()
 
@@ -111,22 +112,20 @@ def loginauth():
         print(error_message)
         return render_template('index.html', error=error_message)
 
-    
-@app.route('/skip', methods=['POST'])
-def skip():
-    return render_template('StartScreen.html')
-
-@app.route('/createOutfit', methods=['POST'])
-def createOutfit():
-    return render_template('CreateAnOutfit.html', outfit=outfit)
-
+@app.route('/logout', methods=['POST'])
+def logout():
+    user.current_user = -1
+    user.current_wardrobe=""
+    return render_template('index.html',user=user)
 
 @app.route('/skip', methods=['POST'])
 def skip():
-    return render_template('StartScreen.html')
+    existing_outfits = get_existing_outfits()
+    return render_template('StartScreen.html', existing_outfits = existing_outfits)
 
 @app.route('/createOutfit', methods=['POST'])
 def createOutfit():
+    outfit = Outfit()
     return render_template('CreateAnOutfit.html', outfit=outfit, user=user)
 
 
@@ -334,7 +333,7 @@ def imageToDatabase(detected_words, labels, image_url, color_name, gender):
     for categories, score in scores.items():
         print(f"{categories}: {score}")
     
-    connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+connection_string
     cnxn = pyodbc.connect(connection_string)
 
     # Create a cursor object to execute SQL queries
@@ -342,8 +341,8 @@ def imageToDatabase(detected_words, labels, image_url, color_name, gender):
 
 
     # Insert the data into the Clothing table
-    insert_query = "INSERT INTO [dbo].[Clothing] (CategoryID, Gender, Color, Description, ImageURL) VALUES (?, ?, ?, ?, ?)"
-    cursor.execute(insert_query, (category, gender, color_name, description, image_url))
+    insert_query = "INSERT INTO [dbo].[Clothing] (CategoryID, Gender, Color, Description, ImageURL, WardrobeID) VALUES (?, ?, ?, ?, ?, ?)"
+    cursor.execute(insert_query, (category, gender, color_name, description, image_url, user.current_wardrobe))
     cnxn.commit()
 
     # Close the cursor and connection
@@ -451,7 +450,7 @@ def upload():
 def newWardrobe():
     wardrobe_name = request.form.get('wardrobe-name')
      # Establish a connection to the database
-    connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+connection_string
     cnxn = pyodbc.connect(connection_string)
 
     # # Create a cursor object to execute SQL queries
@@ -459,17 +458,20 @@ def newWardrobe():
 
     insert_query = "INSERT INTO [dbo].[Wardrobe] (ClothingID,wardrobeName,Stock) VALUES (?,?,?)"
     cursor.execute(insert_query, (None,wardrobe_name,None))
-    cnxn.commit()
+    
 
     query = "SELECT WardrobeID AS count FROM [dbo].[Wardrobe] WHERE [WardrobeName] = ?"
     cursor.execute(query, wardrobe_name)
     user.current_wardrobe =  cursor.fetchone()[0]
-    print (user.current_wardrobe)
+    
+    insert_query = "INSERT INTO [dbo].[UserWardrobe] (UserID,WardrobeID) VALUES (?,?)"
+    cursor.execute(insert_query, (user.current_user,user.current_wardrobe))
+    cnxn.commit()
     # # Close the cursor and connection
     cursor.close()
     cnxn.close()
-
-    return render_template('StartScreen.html',user=user)
+    existing_outfits = get_existing_outfits()
+    return render_template('StartScreen.html',user=user,existing_outfits=existing_outfits)
 
 @app.route('/selectWardrobe', methods=['POST'])
 def selectWardrobe():
@@ -478,7 +480,7 @@ def selectWardrobe():
     if wardrobe_id is not None:
         try:
             # Establish a connection to the database
-            connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+        connection_string
             cnxn = pyodbc.connect(connection_string)
 
             # Create a cursor object to execute SQL queries
@@ -494,7 +496,8 @@ def selectWardrobe():
                 # Close the cursor and connection
                 cursor.close()
                 cnxn.close()
-                return render_template('StartScreen.html',user=user)
+                existing_outfits = get_existing_outfits()
+                return render_template('StartScreen.html',user=user, existing_outfits=existing_outfits)
             
             # Handle the case where no records were found
             return 'No wardrobe found with the specified name'
@@ -513,11 +516,14 @@ def deleteWardrobe():
     if wardrobe_id is not None:
         try:
             # Establish a connection to the database
-            connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+        connection_string
             cnxn = pyodbc.connect(connection_string)
 
             # Create a cursor object to execute SQL queries
             cursor = cnxn.cursor()
+
+            delete_query = "DELETE FROM [dbo].[UserWardrobe] WHERE [WardrobeID] = ?"
+            cursor.execute(delete_query, wardrobe_id)    
 
             # Perform the delete operation using the wardrobe_id
             delete_query = "DELETE FROM [dbo].[Wardrobe] WHERE [WardrobeID] = ?"
@@ -545,7 +551,7 @@ def delete_image():
         # Perform validation if needed (e.g., check if the imageURL is not empty)
 
         # Establish a connection to the database
-        connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+    connection_string
         cnxn = pyodbc.connect(connection_string)
 
         # Create a cursor object to execute SQL queries
@@ -570,13 +576,13 @@ def delete_image():
 @app.route('/head', methods=['GET', 'POST'])
 def head():
     try:
-        connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+    connection_string
         cnxn = pyodbc.connect(connection_string)
 
         cursor = cnxn.cursor()        
         category_id = 2
 
-        cursor.execute(f"SELECT ImageURL, Gender, Color, Description FROM Clothing WHERE CategoryId = {category_id}")
+        cursor.execute(f"SELECT ImageURL, Gender, Color, Description, WardrobeID FROM Clothing WHERE CategoryId = {category_id} AND WardrobeID = {user.current_wardrobe}")
         rows = cursor.fetchall()
 
         # Extract the image URLs from the query results
@@ -593,7 +599,7 @@ def head():
         
         # Close the cursor and connection
         cursor.close()
-        return render_template('head.html', items_data=items_data)
+        return render_template('head.html', items_data=items_data,outfit=outfit)
     except Exception as e:
         # Handle exceptions appropriately, e.g., log the error and return an error page
         print(f"Error: {e}")
@@ -604,13 +610,13 @@ def head():
 @app.route('/tops', methods=['GET', 'POST'])
 def tops():
     try:
-        connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+    connection_string
         cnxn = pyodbc.connect(connection_string)
 
         cursor = cnxn.cursor()        
         category_id = 0
 
-        cursor.execute(f"SELECT ImageURL, Gender, Color, Description FROM Clothing WHERE CategoryId = {category_id}")
+        cursor.execute(f"SELECT ImageURL, Gender, Color, Description, WardrobeID FROM Clothing WHERE CategoryId = {category_id} AND WardrobeID = {user.current_wardrobe}")
         rows = cursor.fetchall()
 
         # Extract the image URLs from the query results
@@ -627,7 +633,7 @@ def tops():
         
         # Close the cursor and connection
         cursor.close()
-        return render_template('Tops.html', items_data=items_data)
+        return render_template('Tops.html', items_data=items_data,outfit=outfit)
     except Exception as e:
         # Handle exceptions appropriately, e.g., log the error and return an error page
         print(f"Error: {e}")
@@ -638,13 +644,13 @@ def tops():
 @app.route('/bottoms', methods=['GET', 'POST'])
 def bottoms():
     try:
-        connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+    connection_string
         cnxn = pyodbc.connect(connection_string)
 
         cursor = cnxn.cursor()        
         category_id = 1
 
-        cursor.execute(f"SELECT ImageURL, Gender, Color, Description FROM Clothing WHERE CategoryId = {category_id}")
+        cursor.execute(f"SELECT ImageURL, Gender, Color, Description, WardrobeID FROM Clothing WHERE CategoryId = {category_id} AND WardrobeID = {user.current_wardrobe}")
         rows = cursor.fetchall()
 
         # Extract the image URLs from the query results
@@ -661,7 +667,7 @@ def bottoms():
         
         # Close the cursor and connection
         cursor.close()
-        return render_template('bottoms.html', items_data=items_data)
+        return render_template('bottoms.html', items_data=items_data,outfit=outfit)
     except Exception as e:
         # Handle exceptions appropriately, e.g., log the error and return an error page
         print(f"Error: {e}")
@@ -672,13 +678,13 @@ def bottoms():
 @app.route('/shoes', methods=['GET', 'POST'])
 def shoes():
     try:
-        connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+    connection_string
         cnxn = pyodbc.connect(connection_string)
 
         cursor = cnxn.cursor()        
         category_id = 3
 
-        cursor.execute(f"SELECT ImageURL, Gender, Color, Description FROM Clothing WHERE CategoryId = {category_id}")
+        cursor.execute(f"SELECT ImageURL, Gender, Color, Description, WardrobeID FROM Clothing WHERE CategoryId = {category_id} AND WardrobeID = {user.current_wardrobe}")
         rows = cursor.fetchall()
 
         # Extract the image URLs from the query results
@@ -695,50 +701,62 @@ def shoes():
         
         # Close the cursor and connection
         cursor.close()
-        return render_template('shoes.html', items_data=items_data)
+        return render_template('shoes.html', items_data=items_data, outfit=outfit)
     except Exception as e:
         # Handle exceptions appropriately, e.g., log the error and return an error page
         print(f"Error: {e}")
         return render_template('error.html')
 
 # Route to display the form to set the head image URL
-@app.route('/set_head', methods=['GET', 'POST'])
+@app.route('/set_head', methods=['POST'])
 def set_head():
     head_image_url = request.form.get('selectedHeadImage')
     outfit.user_head = head_image_url
-    return render_template('CreateAnOutfit.html',outfit=outfit), "Top image URL set successfully: " + head_image_url
+    flash("Top image URL set successfully: " + head_image_url, "success")
+    return redirect(url_for('create_outfit'))  # Redirect to the appropriate route
+
 # Route to display the form to set the top image URL
 @app.route('/set_top', methods=['POST'])
 def set_top():
     top_image_url = request.form.get('selectedTopImage')
     outfit.user_top = top_image_url
-    return render_template('CreateAnOutfit.html',outfit=outfit), "Top image URL set successfully: " + top_image_url
+    flash("Top image URL set successfully: " + top_image_url, "success")
+    return redirect(url_for('create_outfit'))
 
 # Route to display the form to set the bottom image URL
-@app.route('/set_bottom', methods=['GET', 'POST'])
+@app.route('/set_bottom', methods=['POST'])
 def set_bottom():
     bottom_image_url = request.form.get('selectedBottomImage')
     outfit.user_bottom = bottom_image_url
-    return render_template('CreateAnOutfit.html',outfit=outfit), "Top image URL set successfully: " + bottom_image_url
+    flash("Bottom image URL set successfully: " + bottom_image_url, "success")
+    return redirect(url_for('create_outfit'))
 
 # Route to display the form to set the shoes image URL
-@app.route('/set_shoes', methods=['GET', 'POST'])
+@app.route('/set_shoes', methods=['POST'])
 def set_shoes():
     shoes_image_url = request.form.get('selectedShoesImage')
     outfit.user_shoes = shoes_image_url
-    return render_template('CreateAnOutfit.html',outfit=outfit), "Top image URL set successfully: " + shoes_image_url
+    flash("Shoes image URL set successfully: " + shoes_image_url, "success")
+    return redirect(url_for('create_outfit'))
+
+# Route to display the outfit creation form
+@app.route('/create_outfit')
+def create_outfit():
+    return render_template('CreateAnOutfit.html', outfit=outfit)
 
 @app.route('/saveOutfit', methods=['POST'])
 def saveOutfit():
+    outfit_name = request.form.get('outfit-name')
+
      # Establish a connection to the database
-    connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+connection_string
     cnxn = pyodbc.connect(connection_string)
 
     # # Create a cursor object to execute SQL queries
     cursor = cnxn.cursor()
 
-    insert_query = "INSERT INTO [dbo].UserOutfits (UserID, Head, Tops, Bottom, Shoes) VALUES (?,?,?,?,?)"
-    cursor.execute(insert_query, (user.current_user,outfit.user_head,outfit.user_top,outfit.user_bottom,outfit.user_shoes))
+    insert_query = "INSERT INTO [dbo].UserOutfits (UserID, OutfitName, Head, Tops, Bottom, Shoes) VALUES (?,?,?,?,?,?)"
+    cursor.execute(insert_query, (user.current_user,outfit_name,outfit.user_head,outfit.user_top,outfit.user_bottom,outfit.user_shoes))
     cnxn.commit()
 
     # # Close the cursor and connection
@@ -747,68 +765,92 @@ def saveOutfit():
 
     return render_template('CreateAnOutfit.html',outfit=outfit,user=user)
 
-# @app.route('/loadOutfit', methods=['POST'])
-# def loadOutfit():
-#     wardrobe_id = request.form.get('existing-wardrobe')
-#     print (wardrobe_id)
-#     if wardrobe_id is not None:
-#         try:
-#             # Establish a connection to the database
-#             connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
-#             cnxn = pyodbc.connect(connection_string)
+def get_existing_outfits():
+    # Establish a connection to the database
+connection_string
+    conn = pyodbc.connect(connection_string)
 
-#             # Create a cursor object to execute SQL queries
-#             cursor = cnxn.cursor()
+    # Execute the query to retrieve existing wardrobe IDs and names
+    cursor = conn.cursor()
+    cursor.execute("SELECT OutfitID, OutfitName FROM UserOutfits WHERE UserID = ?", user.current_user)
+    rows = cursor.fetchall()
 
-#             query = "SELECT WardrobeID AS count FROM [dbo].[Wardrobe] WHERE [WardrobeID] = ?"
-#             cursor.execute(query, wardrobe_id)
-#             result = cursor.fetchone()
+    # Create a list of dictionaries with wardrobe IDs and names
+    existing_outfits = [{'id': row[0], 'name': row[1]} for row in rows]
 
-#             if result is not None:
-#                 current_wardrobe = result[0]
-#                 print(current_wardrobe)
-#                 # Close the cursor and connection
-#                 cursor.close()
-#                 cnxn.close()
-#                 return render_template('StartScreen.html')
+    # Close the cursor and connection
+    cursor.close()
+    conn.close()
+
+    print(existing_outfits)
+    return existing_outfits
+
+@app.route('/loadOutfit', methods=['POST'])
+def loadOutfit():
+    outfit_id = request.form.get('existing-outfits')
+    print (outfit_id)
+    if outfit_id is not None:
+        try:
+            # Establish a connection to the database
+        connection_string
+            cnxn = pyodbc.connect(connection_string)
+
+            # Create a cursor object to execute SQL queries
+            cursor = cnxn.cursor()
+
+            query = "SELECT OutfitName,Head,Tops,Bottom,Shoes AS count FROM [dbo].[UserOutfits] WHERE [OutfitID] = ?"
+            cursor.execute(query, outfit_id)
+            result = cursor.fetchone()
+
+            if result is not None:
+                current_outfit = result[0]
+                outfit.user_head = result[1]
+                outfit.user_top = result[2]
+                outfit.user_bottom = result[3]
+                outfit.user_shoes = result[4]
+                print(current_outfit)
+                # Close the cursor and connection
+                cursor.close()
+                cnxn.close()
+                return render_template('CreateAnOutfit.html',outfit = outfit)
             
-#             # Handle the case where no records were found
-#             return 'No wardrobe found with the specified name'
+            # Handle the case where no records were found
+            return 'No Outfits found with the specified name'
         
-#         except Exception as e:
-#             # Handle any errors that occurred during database access
-#             return f'Error accessing the database: {str(e)}'
+        except Exception as e:
+            # Handle any errors that occurred during database access
+            return f'Error accessing the database: {str(e)}'
     
-#     # Handle the case where the wardrobe_name is None
-#     return 'Failed to select wardrobe'
+    # Handle the case where the wardrobe_name is None
+    return 'Failed to select outfit'
 
-# @app.route('/deleteOutfit', methods=['POST'])
-# def deleteOutfit():
-#     wardrobe_id = request.form.get('delete-wardrobe')
+@app.route('/deleteOutfit', methods=['POST'])
+def deleteOutfit():
+    outfit_id = request.form.get('delete-outfit')
     
-#     if wardrobe_id is not None:
-#         try:
-#             # Establish a connection to the database
-#             connection_string = 'Driver={ODBC Driver 18 for SQL Server};Server=tcp:findathreadserver.database.windows.net,1433;Database=findathreaddb;Uid=user1;Pwd={Rr12345678};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
-#             cnxn = pyodbc.connect(connection_string)
+    if outfit_id is not None:
+        try:
+            # Establish a connection to the database
+        connection_string
+            cnxn = pyodbc.connect(connection_string)
 
-#             # Create a cursor object to execute SQL queries
-#             cursor = cnxn.cursor()
+            # Create a cursor object to execute SQL queries
+            cursor = cnxn.cursor()
 
-#             # Perform the delete operation using the wardrobe_id
-#             delete_query = "DELETE FROM [dbo].[Wardrobe] WHERE [WardrobeID] = ?"
-#             cursor.execute(delete_query, wardrobe_id)
-#             cnxn.commit()
+            # Perform the delete operation using the wardrobe_id
+            delete_query = "DELETE FROM [dbo].[UserOutfits] WHERE [OutfitID] = ?"
+            cursor.execute(delete_query, outfit_id)
+            cnxn.commit()
 
-#             # Close the cursor and connection
-#             cursor.close()
-#             cnxn.close()
-
-#             return render_template('index.html')
+            # Close the cursor and connection
+            cursor.close()
+            cnxn.close()
+            existing_wardrobes = get_existing_wardrobes()
+            return render_template('AddToWardrobe.html', existing_wardrobes=existing_wardrobes)
         
-#         except Exception as e:
-#             # Handle any errors that occurred during database access
-#             return f'Error accessing the database: {str(e)}'
+        except Exception as e:
+            # Handle any errors that occurred during database access
+            return f'Error accessing the database: {str(e)}'
     
-#     # Handle the case where the wardrobe_id is None
-#     return 'Failed to delete wardrobe'
+    # Handle the case where the wardrobe_id is None
+    return 'Failed to delete outfit'

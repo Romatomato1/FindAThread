@@ -121,70 +121,143 @@
             font-size: 14px; /* Adjust the font size as per your preference */
         }
 
+        .button {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        overflow: hidden;
+        height: 3rem;
+        padding: 0 2rem;
+        border-radius: 1.5rem;
+        background: #3d3a4e;
+        background-size: 400%;
+        color: #fff;
+        border: none;
+        }
+
+        .button:hover::before {
+        transform: scaleX(1);
+        }
+        
+        .button-content {
+        position: relative;
+        z-index: 1;
+        }
+        
+        .button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        transform: scaleX(0);
+        transform-origin: 0 50%;
+        width: 100%;
+        height: inherit;
+        border-radius: inherit;
+        background: linear-gradient(
+            82.3deg,
+            rgba(150, 93, 233, 1) 10.8%,
+            rgba(99, 88, 238, 1) 94.3%
+        );
+        transition: all 0.475s;
+        }
     </style>
 </head>
 <body>
-  <div class="container">
-    <h2 class="wardrobe-heading">Create New Wardrobe</h2>
-    <form method="post" action="{{ url_for('newWardrobe') }}" class="form-inline">
-        <div class="form-group">
-            <input class="form-control text-box-sm" type="text" name="wardrobe-name" placeholder="Enter wardrobe name" required>
-        </div>
-        <button class="btn btn-primary button-89" type="submit">Create Wardrobe</button>
-    </form>
-
-    
-
+    <div class="container">
+      <!-- Create New Wardrobe Form -->
+      <h2 class="wardrobe-heading">Create New Wardrobe</h2>
+      <form method="post" action="{{ url_for('newWardrobe') }}" class="form-inline" id="create-form">
+          <div class="form-group">
+              <input class="form-control text-box-sm" type="text" name="wardrobe-name" placeholder="Enter wardrobe name" required>
+          </div>
+          <button class="btn btn-primary button-89" type="submit">Create Wardrobe</button>
+      </form>
+  
+      <!-- Divider -->
       <div class="divider">
           <hr>
           <span>OR</span>
           <hr>
       </div>
-
-      <h2 class="wardrobe-heading">Select Existing Wardrobe</h2>
-    <div class="dropdown-container">
-        <form method="post" action="{{ url_for('selectWardrobe') }}">
-            <select class="dropdown" name="existing-wardrobe">
-                <option value="">Select an existing wardrobe</option>
-                {% for wardrobe in existing_wardrobes %}
-                    <option value="{{ wardrobe.id }}">{{ wardrobe.name }}</option>
-                {% endfor %}
-            </select>
-            <button class="button-89" type="submit">Select</button>
-        </form>
-    </div>
-
-      <div class="divider">
-        <hr>
-        <span>OR</span>
-        <hr>
-    </div>
-
-    <h2 class="wardrobe-heading">Delete Wardrobe</h2>
-    <div class="dropdown-container">
-        <form method="post" action="{{ url_for('deleteWardrobe') }}">
-            <select class="dropdown" name="delete-wardrobe">
-                <option value="">Select an existing wardrobe</option>
-                {% for wardrobe in existing_wardrobes %}
-                    <option value="{{ wardrobe.id }}">{{ wardrobe.name }}</option>
-                {% endfor %}
-            </select>
-            <button class="button-89" type="submit">Select</button>
-        </form>
-    </div>
-
-  <script>
-    {% raw %}
-    var existingWardrobes = JSON.parse('{{ existing_wardrobes | tojson | safe }}');
-    var selectDropdown = document.querySelector('.dropdown');
   
-    for (var i = 0; i < existingWardrobes.length; i++) {
-      var option = document.createElement('option');
-      option.value = existingWardrobes[i][0];
-      option.textContent = existingWardrobes[i][1];
-      selectDropdown.appendChild(option);
-    }
-    {% endraw %}
-  </script>  
-</body>
-</html>
+      <!-- Select Existing Wardrobe Form -->
+      <h2 class="wardrobe-heading">Select Existing Wardrobe</h2>
+      <div class="dropdown-container">
+          <form method="post" action="{{ url_for('selectWardrobe') }}" id="select-form">
+              <select class="dropdown" name="existing-wardrobe">
+                  <option value="">Select an existing wardrobe</option>
+                  {% for wardrobe in existing_wardrobes %}
+                      <option value="{{ wardrobe.id }}">{{ wardrobe.name }}</option>
+                  {% endfor %}
+              </select>
+              <button class="button-89" type="submit">Select</button>
+          </form>
+      </div>
+  
+      <!-- Divider -->
+      <div class="divider">
+          <hr>
+          <span>OR</span>
+          <hr>
+      </div>
+  
+      <!-- Delete Wardrobe Form -->
+      <h2 class="wardrobe-heading">Delete Wardrobe</h2>
+      <div class="dropdown-container">
+          <form method="post" action="{{ url_for('deleteWardrobe') }}" id="delete-form">
+              <select class="dropdown" name="delete-wardrobe">
+                  <option value="">Select an existing wardrobe</option>
+                  {% for wardrobe in existing_wardrobes %}
+                      <option value="{{ wardrobe.id }}">{{ wardrobe.name }}</option>
+                  {% endfor %}
+              </select>
+              <button class="button-89" type="submit">Delete</button>
+          </form>
+      </div>
+  
+      <!-- Logout Button -->
+      <div class="d-grid gap-2 d-sm-flex justify-content-sm-center my-2">
+          <form method="post" action="{{ url_for('logout') }}">
+              <button type="submit" class="button"><span class="text">Logout</span></button>
+          </form>
+      </div>
+    </div>
+  
+    <!-- JavaScript Alerts -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        // Create New Wardrobe Form
+        var createForm = document.querySelector('#create-form');
+        createForm.addEventListener('submit', function(event) {
+          var wardrobeName = createForm.querySelector('[name="wardrobe-name"]').value;
+          if (wardrobeName.trim() === '') {
+            event.preventDefault(); // Prevent form submission
+            alert("Please enter a wardrobe name.");
+          }
+        });
+  
+        // Select Existing Wardrobe Form
+        var selectForm = document.querySelector('#select-form');
+        selectForm.addEventListener('submit', function(event) {
+          var selectedOption = selectForm.querySelector('.dropdown').value;
+          if (selectedOption === '') {
+            event.preventDefault(); // Prevent form submission
+            alert("Please select an existing wardrobe.");
+          }
+        });
+  
+        // Delete Wardrobe Form
+        var deleteForm = document.querySelector('#delete-form');
+        deleteForm.addEventListener('submit', function(event) {
+          var selectedOption = deleteForm.querySelector('.dropdown').value;
+          if (selectedOption === '') {
+            event.preventDefault(); // Prevent form submission
+            alert("Please select an existing wardrobe to delete.");
+          }
+        });
+      });
+    </script>
+  </body>
+  </html>

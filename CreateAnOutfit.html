@@ -4,6 +4,41 @@
   <title>Outfit Planner</title>
   <link rel="shortcut icon" href="{{ url_for('static', filename='FindAThreadLogo.ico') }}">
   <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      background-image: linear-gradient(180deg,rgb(131, 0, 192),rgb(228, 194, 0));
+      background-repeat: repeat;
+      background-size: cover;
+      overflow: hidden;
+    }
+
+    header {
+      padding: 20px;
+      text-align: center;
+      font-family: "Apple Chancery", cursive;
+      color: #333;
+    }
+    
+    h1 {
+      font-size: 42px;
+      margin: 0;
+      letter-spacing: 2px;
+      font-family: "Apple Chancery", cursive; /* Use a fancier font */
+      font-weight: bold; /* Add this line to make the letters bold */
+    }
+
+    .instructions {
+      text-align: center;
+      font-family: "Montserrat", sans-serif;
+      color: #333;
+      font-size: 18px;
+      margin-top: 20px;
+    }
+
     .image-container {
       display: flex;
       justify-content: center;
@@ -11,6 +46,7 @@
       height: 25vh; /* Adjust the height as needed */
       flex-wrap: wrap; /* To ensure images wrap when the screen is too narrow */
     }
+  
 
     .image-container a {
       display: flex;
@@ -18,6 +54,7 @@
       align-items: center;
       margin: 5px; /* Adjust the margin between image and button */
       text-decoration: none; /* Remove the default underline style for the anchor element */
+      margin-top: -50px;
     }
 
     .image-container img {
@@ -26,8 +63,9 @@
 
     /* Dimensions for Head image */
     .image-container .head-image img {
-      width: 150px; /* Set the desired width for the head image */
-      height: 100px; /* Set the desired height for the head image */
+      width: 130px; /* Set the desired width for the head image */
+      height: 80px; /* Set the desired height for the head image */
+      margin-top: 155px;
     }
 
     /* Dimensions for Top image */
@@ -38,20 +76,52 @@
 
     /* Dimensions for Bottom image */
     .image-container .bottom-image img {
-      width: 160px; /* Set the desired width for the bottom image */
+      width: 170px; /* Set the desired width for the bottom image */
       height: 200px; /* Set the desired height for the bottom image */
+      margin-right: -5.5px;
+      margin-top: -32px;
     }
 
     /* Dimensions for Shoes image */
     .image-container .shoes-image img {
-      width: 160px; /* Set the desired width for the shoes image */
-      height: 90px; /* Set the desired height for the shoes image */
+      width: 107px; /* Set the desired width for the shoes image */
+      height: 68px; /* Set the desired height for the shoes image */
+      margin-top: -160px;
+      margin-right: -5.5px;
+    }
+
+    .image-container a {
+      position: relative; /* Required for positioning pseudo-elements */
+    }
+
+    .image-container a::before {
+      content: attr(data-label); /* Use the data-label attribute for label text */
+      position: absolute;
+      top: 0;
+      right: 0;
+      transform: translateY(-100%) translateX(10%);
+      padding: 5px 8px;
+      background-color: rgba(0, 0, 0, 0.7);
+      color: #fff;
+      font-size: 14px;
+      font-weight: bold;
+      border-radius: 5px;
+      opacity: 0; /* Start with zero opacity */
+      transition: opacity 0.3s ease;
+    }
+
+    .image-container .head-image a::before{
+      transform: translateY(-100%) translateX(10);
+    }
+
+    .image-container a:hover::before {
+      opacity: 1; /* Show the label on hover */
     }
 
     .button {
       position: fixed;
       top: 20px;
-      right: 20px;
+      left: 20px;
       z-index: 9999;
       overflow: hidden;
       height: 3rem;
@@ -89,39 +159,171 @@
       );
       transition: all 0.475s;
     }
+
+    .logout-button {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      overflow: hidden;
+      height: 3rem;
+      padding: 0 2rem;
+      border-radius: 1.5rem;
+      background: #3d3a4e;
+      background-size: 400%;
+      color: #fff;
+      border: none;
+    }
+
+    .logout-button:hover::before {
+      transform: scaleX(1);
+    }
+    
+    .logout-button-content {
+      position: relative;
+      z-index: 1;
+    }
+    
+    .logout-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform: scaleX(0);
+      transform-origin: 0 50%;
+      width: 100%;
+      height: inherit;
+      border-radius: inherit;
+      background: linear-gradient(
+        82.3deg,
+        rgba(150, 93, 233, 1) 10.8%,
+        rgba(99, 88, 238, 1) 94.3%
+      );
+      transition: all 0.475s;
+    }
+
+    .left-button {
+      position: fixed;
+      top: 180px;
+      left: 20px;
+      z-index: 9999;
+      overflow: hidden;
+      height: 3rem;
+      padding: 0 2rem;
+      border-radius: 1.5rem;
+      background: #3d3a4e;
+      background-size: 400%;
+      color: #fff;
+      border: none;
+    }
+
+    .left-button:hover::before {
+      transform: scaleX(1);
+    }
+    
+    .left-button-content {
+      position: relative;
+      z-index: 1;
+    }
+    
+    .left-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform: scaleX(0);
+      transform-origin: 0 50%;
+      width: 100%;
+      height: inherit;
+      border-radius: inherit;
+      background: linear-gradient(
+        82.3deg,
+        rgba(150, 93, 233, 1) 10.8%,
+        rgba(99, 88, 238, 1) 94.3%
+      );
+      transition: all 0.475s;
+    }
+
+    .text-box-sm {
+            width: 300px; /* Adjust the width as per your preference */
+            height: 30px; /* Adjust the height as per your preference */
+            font-size: 14px; /* Adjust the font size as per your preference */
+    }
+
+    .outfit-heading {
+            text-align: center;
+            font-size: 24px;
+            color: #373B44;
+            margin-bottom: 20px;
+    }
+    /* Add new styling for the container */
+    .save-outfit-container {
+            position: absolute;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            z-index: 999; /* Set a higher z-index value */
+            padding-right: 20px;
+    }
+
+    /* Adjust the form width as needed */
+    .save-outfit-form {
+            width: 300px;
+            height: 200px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    }
   </style>
 </head>
 <body>
   <header>
-    <h1>Outfit Planner</h1>
+    <h1>Craft Your Style- Mix and Match Outfit Planner </h1>
   </header>
+
+  <p class="instructions">
+    Click on the images below to customize your outfit. Choose a head, top, bottom, and shoes to create your unique style!
+  </p>
 
   <!-- Image container for Head -->
   <div class="image-container">
-    <a href="{{ url_for('head') }}" class="head-image">
+    <a href="{{ url_for('head') }}" class="head-image" data-label="Head">
       <img src="{{ outfit.user_head }}" alt="Head">
     </a>
   </div>
 
   <!-- Image container for Top -->
   <div class="image-container">
-    <a href="{{ url_for('tops') }}" class="top-image">
+    <a href="{{ url_for('tops') }}" class="top-image" data-label="Top">
       <img src="{{ outfit.user_top }}" alt="Top">
     </a>
   </div>
 
   <!-- Image container for Bottom -->
   <div class="image-container">
-    <a href="{{ url_for('bottoms') }}" class="bottom-image">
+    <a href="{{ url_for('bottoms') }}" class="bottom-image" data-label="Bottom">
       <img src="{{ outfit.user_bottom }}" alt="Bottom">
     </a>
   </div>
 
   <!-- Image container for Shoes -->
   <div class="image-container">
-    <a href="{{ url_for('shoes') }}" class="shoes-image">
+    <a href="{{ url_for('shoes') }}" class="shoes-image" data-label="Shoes">
       <img src="{{ outfit.user_shoes }}" alt="Shoes">
     </a>
+  </div>
+
+  <div class="save-outfit-container">
+    <div class="save-outfit-form">
+      <h2 class="outfit-heading">Save Outfit</h2>
+      <form method="post" action="{{ url_for('saveOutfit') }}" class="form-inline" id="create-form">
+          <div class="form-group">
+              <input class="form-control text-box-sm" type="text" name="outfit-name" placeholder="Enter Outfit Name" required>
+          </div>
+          <button type="submit" class="left-button"><span class="text">Save Outfit</span></button>
+      </form>
+    </div>
   </div>
 
   <div class="d-grid gap-2 d-sm-flex justify-content-sm-center my-2">
@@ -130,5 +332,24 @@
     </form>
   </div>
 
-</body>
-</html>
+  <div class="d-grid gap-2 d-sm-flex justify-content-sm-center my-2">
+    <form method="post" action="{{ url_for('logout') }}">
+        <button type="submit" class="logout-button"><span class="text">Logout</span></button>
+    </form>
+  </div>
+    <!-- JavaScript Alerts -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        // Create New Wardrobe Form
+        var createForm = document.querySelector('#create-form');
+        createForm.addEventListener('submit', function(event) {
+          var wardrobeName = createForm.querySelector('[name="outfit-name"]').value;
+          if (wardrobeName.trim() === '') {
+            event.preventDefault(); // Prevent form submission
+            alert("Please enter an outfit name.");
+          }
+        });
+      });
+    </script>
+  </body>
+  </html>

@@ -1,129 +1,129 @@
 html, body {
-  height: 100%;
-  margin: 0;
-}
+    height: 100%;
+    margin: 0;
+  }
 
-body {
-  background-image: linear-gradient(180deg, rgb(131, 0, 192), rgb(228, 194, 0), rgb(131, 0, 192));
-  background-repeat: repeat;
-  background-size: cover;
-  margin: 0;
-}
+  body {
+    background-image: linear-gradient(180deg, rgb(131, 0, 192), rgb(228, 194, 0), rgb(131, 0, 192));
+    background-repeat: repeat;
+    background-size: cover;
+    margin: 0;
+  }
 
-.image-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-}
+  .image-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+  }
 
-.image {
-  width: 100px; /* Set the desired width for all images */
-  height: 100px; /* Set the desired height for all images */
-  margin: 10px; /* Adjust the margin between images */
-  border: 4px solid transparent; /* Add a thicker transparent border to all images */
-  border-radius: 10px; /* Round all the edges */
-  transition: border-color 0.3s ease; /* Add transition effect to border color changes */
-}
+  .image {
+    width: 100px; /* Set the desired width for all images */
+    height: 100px; /* Set the desired height for all images */
+    margin: 10px; /* Adjust the margin between images */
+    border: 4px solid transparent; /* Add a thicker transparent border to all images */
+    border-radius: 10px; /* Round all the edges */
+    transition: border-color 0.3s ease; /* Add transition effect to border color changes */
+  }
 
-.image:hover {
-  border-color: blue; /* Highlight the image with a brighter blue border when mouse is over it */
-}
+  .image:hover {
+    border-color: blue; /* Highlight the image with a brighter blue border when mouse is over it */
+  }
 
-.image.selected {
-  border-color: blue; /* Highlight the selected image with a blue border */
-}
+  .image.selected {
+    border-color: blue; /* Highlight the selected image with a blue border */
+  }
 
-.item-details {
-  position: relative;
-  display: inline-block;
-  border-bottom: 1px dotted black;
-}
+  .item-details {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black;
+  }
+  
+  .item-details .item-details-display {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
 
-.item-details .item-details-display {
-  visibility: hidden;
-  width: 120px;
-  background-color: black;
-  color: #fff;
-  text-align: center;
-  border-radius: 6px;
-  padding: 5px 0;
+    /* Position the tooltip */
+    position: absolute;
+    z-index: 1;
+  }
+  
+  .item-details:hover .item-details-display {
+    visibility: visible;
+  }
 
-  /* Position the tooltip */
-  position: absolute;
-  z-index: 1;
-}
+  input[type="radio"] {
+    display: none;
+  }
 
-.item-details:hover .item-details-display {
-  visibility: visible;
-}
+  .button {
+    position: fixed;
+    top: 20px;
+    right:20px;
+    z-index: 9999;
+    overflow: hidden;
+    height: 3rem;
+    padding: 0 2rem;
+    border-radius: 1.5rem;
+    background: #472d52;
+    background-size: 400%;
+    color: #fff;
+    border: none;
+  }
 
-input[type="radio"] {
-  display: none;
-}
+  .delete-button {
+    position: relative;
+    overflow: hidden;
+    height: 3rem;
+    padding: 0 2rem;
+    border-radius: 1.5rem;
+    background: #472d52;
+    background-size: 400%;
+    color: #fff;
+    border: none;
+  }
 
-.button {
-  position: fixed;
-  top: 20px;
-  right:20px;
-  z-index: 9999;
-  overflow: hidden;
-  height: 3rem;
-  padding: 0 2rem;
-  border-radius: 1.5rem;
-  background: #472d52;
-  background-size: 400%;
-  color: #fff;
-  border: none;
-}
+  .submit-button {
+    position: relative;
+    overflow: hidden;
+    height: 3rem;
+    padding: 0 2rem;
+    border-radius: 1.5rem;
+    background: #472d52;
+    background-size: 400%;
+    color: #fff;
+    border: none;
+  }
 
-.delete-button {
-  position: relative;
-  overflow: hidden;
-  height: 3rem;
-  padding: 0 2rem;
-  border-radius: 1.5rem;
-  background: #472d52;
-  background-size: 400%;
-  color: #fff;
-  border: none;
-}
-
-.submit-button {
-  position: relative;
-  overflow: hidden;
-  height: 3rem;
-  padding: 0 2rem;
-  border-radius: 1.5rem;
-  background: #472d52;
-  background-size: 400%;
-  color: #fff;
-  border: none;
-}
-
-.button:hover::before {
-  transform: scaleX(1);
-}
-
-.button-content {
-  position: relative;
-  z-index: 1;
-}
-
-.button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  transform: scaleX(0);
-  transform-origin: 0 50%;
-  width: 100%;
-  height: inherit;
-  border-radius: inherit;
-  background: linear-gradient(
-    82.3deg,
-    rgba(150, 93, 233, 1) 10.8%,
-    rgba(99, 88, 238, 1) 94.3%
-  );
-  transition: all 0.475s;
-}
+  .button:hover::before {
+    transform: scaleX(1);
+  }
+  
+  .button-content {
+    position: relative;
+    z-index: 1;
+  }
+  
+  .button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+    width: 100%;
+    height: inherit;
+    border-radius: inherit;
+    background: linear-gradient(
+      82.3deg,
+      rgba(150, 93, 233, 1) 10.8%,
+      rgba(99, 88, 238, 1) 94.3%
+    );
+    transition: all 0.475s;
+  }
